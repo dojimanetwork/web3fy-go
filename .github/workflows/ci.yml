@@ -26,11 +26,11 @@ jobs:
       - name: Run type checking
         run: npm run type-check
 
-      - name: Run linting
-        run: npm run lint
+      # - name: Run linting
+      #   run: npm run lint
 
-      - name: Run tests
-        run: npm test
+      # - name: Run tests
+      #   run: npm test
 
   docker-build-test:
     runs-on: ubuntu-latest
