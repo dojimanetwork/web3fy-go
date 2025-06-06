@@ -1,0 +1,1552 @@
+{
+    "info": {
+        "_postman_id": "web3fygo-api-collection",
+        "name": "Web3FyGo API",
+        "description": "A comprehensive collection for testing the Web3FyGo TypeScript API endpoints including authentication, product scraping, and user management.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_exporter_id": "web3fygo"
+    },
+    "item": [
+        {
+            "name": "Core Endpoints",
+            "item": [
+                {
+                    "name": "Welcome Message",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response contains welcome message\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message).to.eql('Welcome to Web3FyGo!');",
+                                    "    pm.expect(jsonData.version).to.eql('1.0.0');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                ""
+                            ]
+                        },
+                        "description": "Get welcome message and basic API information"
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        ""
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json; charset=utf-8"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"message\": \"Welcome to Web3FyGo!\",\n    \"version\": \"1.0.0\",\n    \"timestamp\": \"2024-01-01T12:00:00.000Z\",\n    \"endpoints\": {\n        \"health\": \"/health\",\n        \"api\": \"/api\",\n        \"products\": \"/api/products?trending=amazon\"\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Health Check",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Health check response is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.status).to.eql('healthy');",
+                                    "    pm.expect(jsonData).to.have.property('uptime');",
+                                    "    pm.expect(jsonData).to.have.property('memory');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/health",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        },
+                        "description": "Check API health status and system metrics"
+                    },
+                    "response": [
+                        {
+                            "name": "Healthy Response",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/health",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "health"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json; charset=utf-8"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"status\": \"healthy\",\n    \"uptime\": 123.456,\n    \"timestamp\": \"2024-01-01T12:00:00.000Z\",\n    \"memory\": {\n        \"rss\": 50331648,\n        \"heapTotal\": 20971520,\n        \"heapUsed\": 15728640,\n        \"external\": 1048576\n    },\n    \"environment\": \"development\"\n}"
+                        }
+                    ]
+                }
+            ],
+            "description": "Core application endpoints for health checks and basic information"
+        },
+        {
+            "name": "API Information",
+            "item": [
+                {
+                    "name": "API Status",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"API status is operational\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.status).to.eql('success');",
+                                    "    pm.expect(jsonData.message).to.eql('API is operational');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/status",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "status"
+                            ]
+                        },
+                        "description": "Check API operational status"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "API Info",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"API info contains endpoints\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.name).to.eql('Web3FyGo API');",
+                                    "    pm.expect(jsonData.endpoints).to.be.an('array');",
+                                    "    pm.expect(jsonData.features.scraping.localBrowserSupport).to.be.undefined;",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/info",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "info"
+                            ]
+                        },
+                        "description": "Get detailed API information and available endpoints"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Scraper Status",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Scraper status is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.status).to.eql('operational');",
+                                    "    pm.expect(jsonData.browser).to.have.property('mode');",
+                                    "    pm.expect(jsonData.features.localBrowserSupport).to.eql(true);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/scraper-status",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "scraper-status"
+                            ]
+                        },
+                        "description": "Get detailed scraper status and configuration"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Configure Scraper - Local Mode",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Mode updated successfully\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.newMode).to.eql('local');",
+                                    "    pm.expect(jsonData.message).to.include('updated to local');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"mode\": \"local\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/scraper-config",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "scraper-config"
+                            ]
+                        },
+                        "description": "Configure scraper to use local visible browser"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Configure Scraper - Headless Mode",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Mode updated successfully\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.newMode).to.eql('headless');",
+                                    "    pm.expect(jsonData.message).to.include('updated to headless');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"mode\": \"headless\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/scraper-config",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "scraper-config"
+                            ]
+                        },
+                        "description": "Configure scraper to use headless browser mode"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Browser Diagnostics",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Diagnostics completed\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.data).to.have.property('system');",
+                                    "    pm.expect(jsonData.data).to.have.property('checks');",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Display diagnostic results\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    console.log('=== Browser Diagnostics ===');",
+                                    "    console.log('Platform:', jsonData.data.system.platform);",
+                                    "    console.log('Node Version:', jsonData.data.system.nodeVersion);",
+                                    "    ",
+                                    "    if (jsonData.data.checks.chrome) {",
+                                    "        console.log('Chrome:', jsonData.data.checks.chrome.available ? '✅ Available' : '❌ Not found');",
+                                    "    }",
+                                    "    ",
+                                    "    if (jsonData.data.checks.launchTest) {",
+                                    "        console.log('Browser Launch:', jsonData.data.checks.launchTest.success ? '✅ Success' : '❌ Failed');",
+                                    "        if (!jsonData.data.checks.launchTest.success) {",
+                                    "            console.log('Error:', jsonData.data.checks.launchTest.error);",
+                                    "        }",
+                                    "    }",
+                                    "    ",
+                                    "    if (jsonData.data.checks.amazonConnectivity) {",
+                                    "        console.log('Amazon Connectivity:', jsonData.data.checks.amazonConnectivity.success ? '✅ Success' : '❌ Failed');",
+                                    "    }",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/browser-diagnostics",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "browser-diagnostics"
+                            ]
+                        },
+                        "description": "Run comprehensive browser and system diagnostics"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "API information and status endpoints"
+        },
+        {
+            "name": "User Management",
+            "item": [
+                {
+                    "name": "Get Users",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Users list is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.users).to.be.an('array');",
+                                    "    pm.expect(jsonData.count).to.be.a('number');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users"
+                            ]
+                        },
+                        "description": "Get list of sample users"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 201\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"User created successfully\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message).to.eql('User created successfully');",
+                                    "    pm.expect(jsonData.user).to.have.property('id');",
+                                    "    pm.expect(jsonData.user.name).to.eql('{{testUserName}}');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"{{testUserName}}\",\n    \"email\": \"{{testUserEmail}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users"
+                            ]
+                        },
+                        "description": "Create a new user with name and email"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create User - Missing Name",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Error message for missing name\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.error).to.eql('Bad Request');",
+                                    "    pm.expect(jsonData.message).to.eql('Name and email are required');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"test@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users"
+                            ]
+                        },
+                        "description": "Test validation - attempt to create user without name"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "User management endpoints for creating and retrieving users"
+        },
+        {
+            "name": "Product Scraping",
+            "item": [
+                {
+                    "name": "Get Trending Products - Amazon",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 or 500\", function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 500]);",
+                                    "});",
+                                    "",
+                                    "if (pm.response.code === 200) {",
+                                    "    pm.test(\"Products response is valid\", function () {",
+                                    "        var jsonData = pm.response.json();",
+                                    "        pm.expect(jsonData.success).to.eql(true);",
+                                    "        pm.expect(jsonData.data.products).to.be.an('array');",
+                                    "        pm.expect(jsonData.data.products.length).to.be.above(0);",
+                                    "    });",
+                                    "    ",
+                                    "    pm.test(\"Products have required fields\", function () {",
+                                    "        var jsonData = pm.response.json();",
+                                    "        if (jsonData.data.products.length > 0) {",
+                                    "            var product = jsonData.data.products[0];",
+                                    "            pm.expect(product).to.have.property('title');",
+                                    "            pm.expect(product).to.have.property('price');",
+                                    "            pm.expect(product).to.have.property('source');",
+                                    "            pm.expect(product).to.have.property('scrapedAt');",
+                                    "        }",
+                                    "    });",
+                                    "    ",
+                                    "    pm.test(\"Response indicates data source\", function () {",
+                                    "        var jsonData = pm.response.json();",
+                                    "        var isFallback = jsonData.message.includes('fallback');",
+                                    "        var isCache = jsonData.message.includes('Database Cache') || jsonData.message.includes('cached');",
+                                    "        var isFresh = jsonData.message.includes('Live') || jsonData.message.includes('scraped');",
+                                    "        ",
+                                    "        if (isFallback) {",
+                                    "            console.log('Using fallback data due to scraping limitations');",
+                                    "        } else if (isCache) {",
+                                    "            console.log('Using cached data from PostgreSQL database - Fast response!');",
+                                    "        } else if (isFresh) {",
+                                    "            console.log('Successfully scraped fresh data from Amazon - Saved to database');",
+                                    "        } else {",
+                                    "            console.log('Data source: ' + jsonData.message);",
+                                    "        }",
+                                    "    });",
+                                    "} else {",
+                                    "    pm.test(\"Expected service error\", function () {",
+                                    "        var jsonData = pm.response.json();",
+                                    "        pm.expect(jsonData.success).to.eql(false);",
+                                    "        pm.expect(jsonData.error).to.eql('Service unavailable');",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/products?trending=amazon&limit={{productLimit}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "trending",
+                                    "value": "amazon"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "{{productLimit}}"
+                                }
+                            ]
+                        },
+                        "description": "Fetch trending products from Amazon (may take 10-30 seconds)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Enhanced Products - Amazon (Up to 50 with Scrolling)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Enhanced products response is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.data.products).to.be.an('array');",
+                                    "    pm.expect(jsonData.data.products.length).to.be.above(0);",
+                                    "    pm.expect(jsonData.data.products.length).to.be.at.most(50);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Enhanced products have comprehensive data\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data.products.length > 0) {",
+                                    "        var product = jsonData.data.products[0];",
+                                    "        pm.expect(product).to.have.property('rank');",
+                                    "        pm.expect(product).to.have.property('title');",
+                                    "        pm.expect(product).to.have.property('price');",
+                                    "        pm.expect(product).to.have.property('rating');",
+                                    "        pm.expect(product).to.have.property('source');",
+                                    "        pm.expect(product).to.have.property('scrapedAt');",
+                                    "        pm.expect(product.source).to.include('ASIN:');",
+                                    "    }",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Enhanced scraping successfully extracted multiple products\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.data.totalFound).to.be.above(1);",
+                                    "    pm.expect(jsonData.message).to.include('enhanced scraping with scrolling');",
+                                    "    console.log(`Successfully extracted ${jsonData.data.totalFound} products with enhanced scrolling`);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Products contain real Amazon data\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data.products.length > 0) {",
+                                    "        var product = jsonData.data.products[0];",
+                                    "        pm.expect(product.source).to.include('Amazon Best Sellers');",
+                                    "        pm.expect(product.source).to.include('Electronics');",
+                                    "        // Check for real ASIN format",
+                                    "        var asinMatch = product.source.match(/ASIN: ([A-Z0-9]{10})/);",
+                                    "        pm.expect(asinMatch).to.not.be.null;",
+                                    "        console.log(`Sample product: ${product.title} - ${product.price} (ASIN: ${asinMatch[1]})`);",
+                                    "    }",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/products-enhanced?trending=amazon&limit={{enhancedProductLimit}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products-enhanced"
+                            ],
+                            "query": [
+                                {
+                                    "key": "trending",
+                                    "value": "amazon"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "{{enhancedProductLimit}}"
+                                }
+                            ]
+                        },
+                        "description": "Fetch up to 50 trending products from Amazon using enhanced scraping with browser scrolling. Uses specific Amazon selectors and dynamic content loading."
+                    },
+                    "response": [
+                        {
+                            "name": "Success - Enhanced Products",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/products-enhanced?trending=amazon&limit=30",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "products-enhanced"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "trending",
+                                            "value": "amazon"
+                                        },
+                                        {
+                                            "key": "limit",
+                                            "value": "30"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json; charset=utf-8"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Successfully retrieved 30 products using enhanced scraping with scrolling\",\n    \"data\": {\n        \"products\": [\n            {\n                \"rank\": \"1\",\n                \"title\": \"Blink Subscription Plus Plan with monthly auto-renewal\",\n                \"price\": \"$10.00\",\n                \"rating\": \"4.4 out of 5 stars\",\n                \"image\": \"https://images-na.ssl-images-amazon.com/images/I/316iIKOVz7L._AC_UL900_SR900,600_.png\",\n                \"link\": \"https://www.amazon.com/Blink-Plus-Plan-monthly-auto-renewal/dp/B08JHCVHTY/ref=zg_bs_g_electronics_d_sccl_1\",\n                \"source\": \"Amazon Best Sellers (Electronics) - ASIN: B08JHCVHTY\",\n                \"scrapedAt\": \"2025-06-06T04:17:06.251Z\"\n            }\n        ],\n        \"totalFound\": 30,\n        \"source\": \"Amazon Best Sellers (Electronics) - ASIN: B08JHCVHTY\",\n        \"parameters\": {\n            \"trending\": \"amazon\",\n            \"limit\": 30\n        }\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Products - Missing Parameter",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Missing parameter error\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(false);",
+                                    "    pm.expect(jsonData.error).to.eql('Missing required parameter');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/products",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products"
+                            ]
+                        },
+                        "description": "Test validation - missing trending parameter"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Products - Invalid Parameter",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Invalid parameter error\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(false);",
+                                    "    pm.expect(jsonData.error).to.eql('Invalid trending parameter');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/products?trending=invalid",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "trending",
+                                    "value": "invalid"
+                                }
+                            ]
+                        },
+                        "description": "Test invalid parameter handling for products endpoint"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Product scraping endpoints for Amazon and other platforms"
+        },
+        {
+            "name": "Database Endpoints",
+            "item": [
+                {
+                    "name": "Get Database Statistics",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Database stats response is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.data).to.have.property('database');",
+                                    "    pm.expect(jsonData.data).to.have.property('products');",
+                                    "    pm.expect(jsonData.data).to.have.property('sessions');",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Database connection is healthy\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.data.database.connected).to.eql(true);",
+                                    "    pm.expect(jsonData.data.database.status).to.eql('healthy');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/database/stats",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "database",
+                                "stats"
+                            ]
+                        },
+                        "description": "Get comprehensive database statistics including product counts, session data, and connection status"
+                    },
+                    "response": [
+                        {
+                            "name": "Success - Database Stats",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/database/stats",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "database",
+                                        "stats"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json; charset=utf-8"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Database statistics retrieved successfully\",\n    \"data\": {\n        \"database\": {\n            \"connected\": true,\n            \"status\": \"healthy\",\n            \"connectionPool\": {\n                \"total\": 20,\n                \"idle\": 18,\n                \"waiting\": 0\n            }\n        },\n        \"products\": {\n            \"total\": 25,\n            \"categories\": {\n                \"electronics\": 15,\n                \"electronics-enhanced\": 10\n            },\n            \"recent\": {\n                \"last24Hours\": 25,\n                \"lastWeek\": 25\n            }\n        },\n        \"sessions\": {\n            \"total\": 12,\n            \"successful\": 10,\n            \"failed\": 2,\n            \"successRate\": \"83.33%\"\n        }\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Clean Old Database Data",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Cleanup response is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.data).to.have.property('cleaned');",
+                                    "    pm.expect(jsonData.data.cleaned).to.have.property('products');",
+                                    "    pm.expect(jsonData.data.cleaned).to.have.property('sessions');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/database/cleanup?days={{cleanupDays}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "database",
+                                "cleanup"
+                            ],
+                            "query": [
+                                {
+                                    "key": "days",
+                                    "value": "{{cleanupDays}}"
+                                }
+                            ]
+                        },
+                        "description": "Clean up old database records older than specified days (default: 7 days)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Force Refresh Products",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Force refresh response is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.data.products).to.be.an('array');",
+                                    "    pm.expect(jsonData.data.products.length).to.be.above(0);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response indicates fresh scraping\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message).to.include('Force refresh');",
+                                    "    pm.expect(jsonData.data).to.have.property('sessionId');",
+                                    "    console.log('Successfully forced refresh with session:', jsonData.data.sessionId);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/products/refresh",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products",
+                                "refresh"
+                            ]
+                        },
+                        "description": "Force refresh product data by bypassing cache and scraping fresh data"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Products with Force Refresh",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Force refresh via query param works\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.message).to.include('Force refresh');",
+                                    "    pm.expect(jsonData.data.products).to.be.an('array');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/products?trending=amazon&limit={{productLimit}}&force=true",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "trending",
+                                    "value": "amazon"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "{{productLimit}}"
+                                },
+                                {
+                                    "key": "force",
+                                    "value": "true"
+                                }
+                            ]
+                        },
+                        "description": "Fetch products with force refresh using query parameter to bypass cache"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Enhanced Products with Force Refresh",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Enhanced force refresh works\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.message).to.include('Force refresh');",
+                                    "    pm.expect(jsonData.data.products).to.be.an('array');",
+                                    "    pm.expect(jsonData.data.products.length).to.be.above(0);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/products-enhanced?trending=amazon&limit={{productLimit}}&force=true",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products-enhanced"
+                            ],
+                            "query": [
+                                {
+                                    "key": "trending",
+                                    "value": "amazon"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "{{productLimit}}"
+                                },
+                                {
+                                    "key": "force",
+                                    "value": "true"
+                                }
+                            ]
+                        },
+                        "description": "Fetch enhanced products with force refresh using query parameter to bypass cache"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Database management endpoints for PostgreSQL integration, caching, and data cleanup"
+        },
+        {
+            "name": "Individual Product Details",
+            "item": [
+                {
+                    "name": "Get Product Details by URL",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Product details response is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(true);",
+                                    "    pm.expect(jsonData.data).to.have.property('product');",
+                                    "    pm.expect(jsonData.data.product).to.be.an('object');",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Product has required fields\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    var product = jsonData.data.product;",
+                                    "    pm.expect(product).to.have.property('title');",
+                                    "    pm.expect(product).to.have.property('price');",
+                                    "    pm.expect(product).to.have.property('rating');",
+                                    "    pm.expect(product).to.have.property('source');",
+                                    "    pm.expect(product).to.have.property('scrapedAt');",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response indicates data source\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    var isCache = jsonData.message.includes('cache');",
+                                    "    var isFresh = jsonData.message.includes('scraping');",
+                                    "    ",
+                                    "    if (isCache) {",
+                                    "        console.log('Using cached product details from PostgreSQL database - Fast response!');",
+                                    "    } else if (isFresh) {",
+                                    "        console.log('Successfully scraped fresh product details from Amazon - Saved to database');",
+                                    "    } else {",
+                                    "        console.log('Product details source: ' + jsonData.message);",
+                                    "    }",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Product URL matches requested URL\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    var requestedUrl = pm.request.url.query.get('url');",
+                                    "    var productUrl = jsonData.data.product.link;",
+                                    "    pm.expect(productUrl).to.eql(requestedUrl);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/product/details?url={{sampleAmazonUrl}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "product",
+                                "details"
+                            ],
+                            "query": [
+                                {
+                                    "key": "url",
+                                    "value": "{{sampleAmazonUrl}}"
+                                }
+                            ]
+                        },
+                        "description": "Scrape individual Amazon product details from a specific product URL. Uses database caching for faster subsequent requests."
+                    },
+                    "response": [
+                        {
+                            "name": "Success - Product Details",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/product/details?url=https://www.amazon.com/dp/B08N5WRWNW",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "product",
+                                        "details"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "url",
+                                            "value": "https://www.amazon.com/dp/B08N5WRWNW"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json; charset=utf-8"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Successfully retrieved product details via live scraping\",\n    \"data\": {\n        \"product\": {\n            \"rank\": \"1\",\n            \"title\": \"Echo Dot (5th Gen) | Smart speaker with bigger vibrant sound and Alexa\",\n            \"price\": \"$49.99\",\n            \"rating\": \"4.7 out of 5 stars\",\n            \"image\": \"https://m.media-amazon.com/images/I/714Rq4k05UL._AC_SL1500_.jpg\",\n            \"link\": \"https://www.amazon.com/dp/B08N5WRWNW\",\n            \"source\": \"Amazon Product Detail - ASIN: B08N5WRWNW\",\n            \"scrapedAt\": \"2024-06-06T12:00:00.000Z\",\n            \"asin\": \"B08N5WRWNW\",\n            \"availability\": \"In Stock\",\n            \"reviewCount\": \"50,000+ reviews\",\n            \"brand\": \"Amazon\",\n            \"features\": [\n                \"Bigger vibrant sound – In a compact design, Echo Dot delivers crisp vocals and balanced bass for full sound.\",\n                \"Your favorite music and content – Play music, audiobooks, and podcasts from Amazon Music, Apple Music, Spotify, and others.\",\n                \"Alexa is happy to help – Ask Alexa for weather updates, set timers, answer questions, tell jokes, and more.\",\n                \"Smart home made easy – Use your voice to turn on lights, lock doors, set thermostats, and more with compatible devices.\",\n                \"Privacy controls – Amazon is not in the business of selling your personal information to others.\"\n            ]\n        },\n        \"source\": \"Live Scraping - Just scraped product details\",\n        \"parameters\": {\n            \"url\": \"https://www.amazon.com/dp/B08N5WRWNW\",\n            \"maxAgeHours\": 24\n        },\n        \"sessionId\": \"uuid-session-id\"\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Product Details - Missing URL",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Missing URL parameter error\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(false);",
+                                    "    pm.expect(jsonData.error).to.include('Missing required parameter');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/product/details",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "product",
+                                "details"
+                            ]
+                        },
+                        "description": "Test error handling when URL parameter is missing"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Product Details - Invalid URL",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Invalid URL format error\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.eql(false);",
+                                    "    pm.expect(jsonData.error).to.include('Invalid URL format');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/product/details?url=not-a-valid-url",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "product",
+                                "details"
+                            ],
+                            "query": [
+                                {
+                                    "key": "url",
+                                    "value": "not-a-valid-url"
+                                }
+                            ]
+                        },
+                        "description": "Test error handling when an invalid URL is provided"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Individual product detail scraping from specific Amazon URLs with database caching"
+        },
+        {
+            "name": "Testing & Utilities",
+            "item": [
+                {
+                    "name": "Echo Test",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Echo response is correct\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message).to.eql('Echo successful');",
+                                    "    pm.expect(jsonData.received.test).to.eql('Hello from Postman');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"test\": \"Hello from Postman\",\n    \"timestamp\": \"{{$timestamp}}\",\n    \"uuid\": \"{{$randomUUID}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/echo",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "echo"
+                            ]
+                        },
+                        "description": "Echo endpoint for testing request/response flow"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Echo Test - With Auth",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Auth header is present in response\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.headers.authorization).to.eql('Bearer {{authToken}}');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{authToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"test\": \"Authenticated Echo\",\n    \"user\": \"demo\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/echo",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "echo"
+                            ]
+                        },
+                        "description": "Echo endpoint with authentication header"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Testing utilities and echo endpoints for development"
+        },
+        {
+            "name": "Error Handling",
+            "item": [
+                {
+                    "name": "404 - Not Found",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 404\", function () {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"404 error response\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.error).to.eql('Route not found');",
+                                    "    pm.expect(jsonData.path).to.eql('/nonexistent');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/nonexistent",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "nonexistent"
+                            ]
+                        },
+                        "description": "Test 404 error handling for non-existent routes"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Error handling test cases"
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "// Set dynamic variables",
+                    "pm.globals.set('timestamp', Date.now());",
+                    "",
+                    "// Generate test data",
+                    "const names = ['John Doe', 'Jane Smith', 'Bob Johnson', 'Alice Brown'];",
+                    "const domains = ['example.com', 'test.com', 'demo.org'];",
+                    "",
+                    "const randomName = names[Math.floor(Math.random() * names.length)];",
+                    "const randomDomain = domains[Math.floor(Math.random() * domains.length)];",
+                    "const randomEmail = randomName.toLowerCase().replace(' ', '.') + '@' + randomDomain;",
+                    "",
+                    "pm.globals.set('testUserName', randomName);",
+                    "pm.globals.set('testUserEmail', randomEmail);"
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "// Global test for response time",
+                    "pm.test(\"Response time is reasonable\", function () {",
+                    "    pm.expect(pm.response.responseTime).to.be.below(30000);",
+                    "});",
+                    "",
+                    "// Global test for content type",
+                    "if (pm.response.code !== 404) {",
+                    "    pm.test(\"Content-Type is JSON\", function () {",
+                    "        pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                    "    });",
+                    "}"
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000",
+            "type": "string"
+        },
+        {
+            "key": "authToken",
+            "value": "demo-token",
+            "type": "string"
+        },
+        {
+            "key": "productLimit",
+            "value": "10",
+            "type": "string"
+        }
+    ]
+}
