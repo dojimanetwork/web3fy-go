@@ -82,7 +82,7 @@ pipeline {
                     echo "📦 Installing dependencies and building..."
                     sh '''
                         # Install dependencies
-                        npm ci
+                        npm install
                         
                         # Run type checking
                         npm run type-check
