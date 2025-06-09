@@ -66,7 +66,7 @@ RUN npm ci --only=production && npm cache clean --force
 
 # Development stage
 FROM base AS development
-RUN npm ci
+RUN npm install
 COPY . .
 RUN npm run build
 CMD ["npm", "run", "dev"]
