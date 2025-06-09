@@ -73,7 +73,7 @@ CMD ["npm", "run", "dev"]
 
 # Production build stage
 FROM base AS build
-RUN npm ci
+RUN npm install
 COPY . .
 RUN npm run build
 
