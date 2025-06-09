@@ -26,10 +26,85 @@ jest.mock('puppeteer', () => ({
     })
 }));
 
+// Mock pg to prevent actual database connections
+jest.mock('pg', () => ({
+    Pool: jest.fn().mockImplementation(() => ({
+        connect: jest.fn().mockResolvedValue({
+            query: jest.fn().mockImplementation((query) => {
+                // Handle different query types
+                if (query.includes('COUNT(*)')) {
+                    return Promise.resolve({
+                        rows: [{
+                            count: '10',
+                            last_scraped: new Date()
+                        }]
+                    });
+                }
+                // Default product query response
+                return Promise.resolve({
+                    rows: [{
+                        id: 1,
+                        asin: 'B07ZPKN6YR',
+                        rank: 1,
+                        title: 'Test Product',
+                        price: '$99.99',
+                        rating: '4.5 out of 5 stars',
+                        image_url: 'https://example.com/image.jpg',
+                        product_url: 'https://amazon.com/dp/B07ZPKN6YR',
+                        source: 'Amazon Best Sellers',
+                        category: 'electronics',
+                        scraped_at: new Date(),
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    }]
+                });
+            }),
+            release: jest.fn()
+        }),
+        query: jest.fn().mockImplementation((query) => {
+            // Handle different query types
+            if (query.includes('COUNT(*)')) {
+                return Promise.resolve({
+                    rows: [{
+                        count: '10',
+                        last_scraped: new Date()
+                    }]
+                });
+            }
+            // Default product query response
+            return Promise.resolve({
+                rows: [{
+                    id: 1,
+                    asin: 'B07ZPKN6YR',
+                    rank: 1,
+                    title: 'Test Product',
+                    price: '$99.99',
+                    rating: '4.5 out of 5 stars',
+                    image_url: 'https://example.com/image.jpg',
+                    product_url: 'https://amazon.com/dp/B07ZPKN6YR',
+                    source: 'Amazon Best Sellers',
+                    category: 'electronics',
+                    scraped_at: new Date(),
+                    created_at: new Date(),
+                    updated_at: new Date()
+                }]
+            });
+        }),
+        end: jest.fn().mockResolvedValue(undefined)
+    }))
+}));
+
 // Define mock objects
 const mockDbService = {
-    getProducts: jest.fn().mockResolvedValue(mockData.data.products),
-    hasFreshData: jest.fn().mockResolvedValue({ hasFresh: true, count: 10, lastScraped: new Date() }),
+    getProducts: jest.fn().mockResolvedValue(mockData.data.products.map((product: { scrapedAt: string }) => ({
+        ...product,
+        scraped_at: new Date(product.scrapedAt)
+    }))),
+    hasFreshData: jest.fn().mockResolvedValue({
+        hasFresh: true,
+        count: 10,
+        lastScraped: new Date()
+    }),
     createScrapingSession: jest.fn().mockResolvedValue('test-session-id'),
     saveProducts: jest.fn().mockResolvedValue(10),
     updateScrapingSession: jest.fn().mockResolvedValue(true)
