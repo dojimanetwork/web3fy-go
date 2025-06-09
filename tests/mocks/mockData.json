@@ -1,0 +1,128 @@
+{
+    "success": true,
+    "timestamp": "2025-06-09T04:49:08.274Z",
+    "message": "Successfully retrieved 10 products from database cache",
+    "data": {
+        "products": [
+            {
+                "rank": 1,
+                "title": "Test Product 1",
+                "price": 99.99,
+                "rating": 4.5,
+                "image": "https://example.com/image1.jpg",
+                "link": "https://example.com/product1",
+                "source": "Test Source 1",
+                "scrapedAt": "2024-03-20T12:00:00.000Z",
+                "asin": "B123456789"
+            },
+            {
+                "rank": 2,
+                "title": "Test Product 2",
+                "price": 149.99,
+                "rating": 4.8,
+                "image": "https://example.com/image2.jpg",
+                "link": "https://example.com/product2",
+                "source": "Test Source 2",
+                "scrapedAt": "2024-03-20T12:00:00.000Z",
+                "asin": "B987654321"
+            },
+            {
+                "rank": 3,
+                "title": "Apple AirTag",
+                "price": "$22.52",
+                "rating": "No rating",
+                "image": "https://images-na.ssl-images-amazon.com/images/I/71rP7f78eFL._AC_UL900_SR900,600_.jpg",
+                "link": "https://www.amazon.com/Apple-MX532LL-A-AirTag/dp/B0CWXNS552/ref=zg_bs_g_electronics_d_sccl_3/130-2506709-4685536?psc=1",
+                "source": "Amazon Best Sellers",
+                "scrapedAt": "2025-06-09T04:48:16.515Z",
+                "asin": "B0CWXNS552"
+            },
+            {
+                "rank": 4,
+                "title": "Amazon Fire TV Stick HD (newest model), free and live TV, Alexa Voice Remote, smart home controls, HD streaming",
+                "price": "$19.99",
+                "rating": "No rating",
+                "image": "https://images-na.ssl-images-amazon.com/images/I/71rUQOC9BwL._AC_UL900_SR900,600_.jpg",
+                "link": "https://www.amazon.com/amazon-fire-tv-stick-hd/dp/B0CQMRKRV5/ref=zg_bs_g_electronics_d_sccl_4/130-2506709-4685536?psc=1",
+                "source": "Amazon Best Sellers",
+                "scrapedAt": "2025-06-09T04:48:16.515Z",
+                "asin": "B0CQMRKRV5"
+            },
+            {
+                "rank": 5,
+                "title": "Apple AirTag 4 Pack",
+                "price": "$73.49",
+                "rating": "No rating",
+                "image": "https://images-na.ssl-images-amazon.com/images/I/61bMNCeAUAL._AC_UL900_SR900,600_.jpg",
+                "link": "https://www.amazon.com/Apple-MX542LL-A-AirTag-Pack/dp/B0D54JZTHY/ref=zg_bs_g_electronics_d_sccl_5/130-2506709-4685536?psc=1",
+                "source": "Amazon Best Sellers",
+                "scrapedAt": "2025-06-09T04:48:16.516Z",
+                "asin": "B0D54JZTHY"
+            },
+            {
+                "rank": 6,
+                "title": "Apple AirPods 4 Wireless Earbuds, Bluetooth Headphones, Personalized Spatial Audio, Sweat and Water Resistant, USB-C Charging Case, H2 Chip, Up to 30 Hours of Battery Life, Effortless Setup for iPhone",
+                "price": "$142.99",
+                "rating": "No rating",
+                "image": "https://images-na.ssl-images-amazon.com/images/I/61iBtxCUabL._AC_UL900_SR900,600_.jpg",
+                "link": "https://www.amazon.com/Apple-Bluetooth-Headphones-Personalized-Effortless/dp/B0DGHMNQ5Z/ref=zg_bs_g_electronics_d_sccl_6/130-2506709-4685536?psc=1",
+                "source": "Amazon Best Sellers",
+                "scrapedAt": "2025-06-09T04:48:16.516Z",
+                "asin": "B0DGHMNQ5Z"
+            },
+            {
+                "rank": 7,
+                "title": "Amazon Fire TV Stick 4K (newest model) with AI-powered Fire TV Search, Wi-Fi 6, stream over 1.5 million movies and shows, free & live TV",
+                "price": "$29.99",
+                "rating": "No rating",
+                "image": "https://images-na.ssl-images-amazon.com/images/I/71+Pvh7WB6L._AC_UL900_SR900,600_.jpg",
+                "link": "https://www.amazon.com/Amazon-Fire-TV-Stick-4K-streaming-device/dp/B0CJM1GNFQ/ref=zg_bs_g_electronics_d_sccl_7/130-2506709-4685536?psc=1",
+                "source": "Amazon Best Sellers",
+                "scrapedAt": "2025-06-09T04:48:16.516Z",
+                "asin": "B0CJM1GNFQ"
+            },
+            {
+                "rank": 8,
+                "title": "Wireless Earbuds Bluetooth V5.3 Headphones 50H Playback Deep Bass Stereo Ear Buds with LED Power Display Charging Case IPX7 Waterproof Earphones with Mic Headset for Laptop Pad Android/iOS Phones",
+                "price": "$6.99",
+                "rating": "No rating",
+                "image": "https://images-na.ssl-images-amazon.com/images/I/61MbQE+iLpL._AC_UL900_SR900,600_.jpg",
+                "link": "https://www.amazon.com/Wireless-Bluetooth-Headphones-Waterproof-Earphones/dp/B0DPHV235S/ref=zg_bs_g_electronics_d_sccl_8/130-2506709-4685536?psc=1",
+                "source": "Amazon Best Sellers",
+                "scrapedAt": "2025-06-09T04:48:16.516Z",
+                "asin": "B0DPHV235S"
+            },
+            {
+                "rank": 9,
+                "title": "Amazon Fire TV Stick 4K Max streaming device (newest model) supports Wi-Fi 6E, free & live TV without cable or satellite",
+                "price": "$39.99",
+                "rating": "No rating",
+                "image": "https://images-na.ssl-images-amazon.com/images/I/71E1te69hZL._AC_UL900_SR900,600_.jpg",
+                "link": "https://www.amazon.com/all-new-amazon-fire-tv-stick-4k-max/dp/B0BP9SNVH9/ref=zg_bs_g_electronics_d_sccl_9/130-2506709-4685536?psc=1",
+                "source": "Amazon Best Sellers",
+                "scrapedAt": "2025-06-09T04:48:16.516Z",
+                "asin": "B0BP9SNVH9"
+            },
+            {
+                "rank": 10,
+                "title": "6 Ft Surge Protector Power Strip - 8 Widely Outlets with 4 USB Ports, 3 Side Outlet Extender with 6 Feet Extension Cord, Flat Plug, Wall Mount, Desk USB Charging Station, ETL,White",
+                "price": "$11.98",
+                "rating": "No rating",
+                "image": "https://images-na.ssl-images-amazon.com/images/I/61NGPmmMAIL._AC_UL900_SR900,600_.jpg",
+                "link": "https://www.amazon.com/Surge-Protector-Power-Strip-Extension/dp/B09PDLBFKY/ref=zg_bs_g_electronics_d_sccl_10/130-2506709-4685536?psc=1",
+                "source": "Amazon Best Sellers",
+                "scrapedAt": "2025-06-09T04:48:16.516Z",
+                "asin": "B09PDLBFKY"
+            }
+        ],
+        "totalFound": 10,
+        "source": "Database Cache (electronics) - 0 hours old",
+        "parameters": {
+            "trending": "amazon",
+            "limit": 10,
+            "category": "electronics",
+            "maxAgeHours": 24
+        }
+    },
+    "error": null
+}

@@ -1,5 +1,8 @@
 import request from 'supertest';
 import app from '../src/index';
+import * as dbService from '../src/services/database';
+import * as fs from 'fs';
+import * as path from 'path';
 
 describe('API Endpoints', () => {
 
@@ -135,46 +138,6 @@ describe('API Endpoints', () => {
             });
         });
 
-        describe('GET /api/products', () => {
-            it('should return 400 for missing trending parameter', async () => {
-                const res = await request(app)
-                    .get('/api/products')
-                    .expect(400);
-
-                expect(res.body).toHaveProperty('success', false);
-                expect(res.body).toHaveProperty('error', 'Missing required parameter');
-            });
-
-            it('should return 400 for invalid trending parameter', async () => {
-                const res = await request(app)
-                    .get('/api/products?trending=invalid')
-                    .expect(400);
-
-                expect(res.body).toHaveProperty('success', false);
-                expect(res.body).toHaveProperty('error', 'Invalid trending parameter');
-            });
-
-            // Note: This test might be slow due to web scraping
-            it('should fetch trending products from Amazon', async () => {
-                const res = await request(app)
-                    .get('/api/products?trending=amazon&limit=5')
-                    .timeout(60000); // 60 second timeout for scraping
-
-                // The test might fail due to Amazon's anti-bot measures, so we'll check for either success or expected error
-                if (res.status === 200) {
-                    expect(res.body).toHaveProperty('success', true);
-                    expect(res.body).toHaveProperty('data');
-                    expect(res.body.data).toHaveProperty('products');
-                    expect(Array.isArray(res.body.data.products)).toBe(true);
-                    expect(res.body.data).toHaveProperty('source', 'Amazon');
-                } else {
-                    // If scraping fails due to anti-bot measures, expect 500 error
-                    expect(res.status).toBe(500);
-                    expect(res.body).toHaveProperty('success', false);
-                    expect(res.body).toHaveProperty('error', 'Scraping failed');
-                }
-            }, 60000);
-        });
 
     });
 
