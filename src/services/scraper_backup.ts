@@ -1,4 +1,4 @@
-import puppeteer, { Browser, Page } from 'puppeteer';
+import puppeteer, { Browser, Page, PuppeteerLaunchOptions } from 'puppeteer';
 import { delay } from '../utils/helpers';
 import { Product, BrowserConfig, ScrapingOptions } from '../types';
 import { execSync } from 'child_process';
@@ -22,9 +22,8 @@ class AmazonScraper {
                 console.log(`Using Chrome at: ${chromePath}`);
             }
 
-            const config: BrowserConfig = {
-                headless: this.useLocalBrowser ? false : 'new', // Use local browser window or headless
-                executablePath: chromePath, // Use detected Chrome path
+            const launchOptions: PuppeteerLaunchOptions = {
+                headless: this.useLocalBrowser ? false : 'new',
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
@@ -38,20 +37,22 @@ class AmazonScraper {
                     '--disable-blink-features=AutomationControlled',
                     '--disable-extensions-except',
                     '--disable-plugins-discovery'
-                ]
+                ],
+                timeout: 30000,
+                protocolTimeout: 30000,
+                defaultViewport: null,
+                devtools: false,
+                slowMo: 100
             };
+
+            if (chromePath) {
+                launchOptions.executablePath = chromePath;
+            }
 
             try {
                 console.log('Attempting to launch browser with configuration...');
 
-                this.browser = await puppeteer.launch({
-                    ...config,
-                    timeout: 30000, // Reduced timeout for faster failure detection
-                    protocolTimeout: 30000,
-                    defaultViewport: null,
-                    devtools: false,
-                    slowMo: 100
-                });
+                this.browser = await puppeteer.launch(launchOptions);
 
                 console.log('Local browser launched successfully');
 
@@ -70,23 +71,24 @@ class AmazonScraper {
 
                 try {
                     // More conservative fallback configuration
-                    const fallbackConfig: BrowserConfig = {
+                    const fallbackOptions: PuppeteerLaunchOptions = {
                         headless: 'new',
-                        executablePath: chromePath, // Use same Chrome path for fallback
                         args: [
                             '--no-sandbox',
                             '--disable-setuid-sandbox',
                             '--disable-dev-shm-usage',
                             '--disable-gpu',
                             '--disable-web-security'
-                        ]
+                        ],
+                        timeout: 20000,
+                        protocolTimeout: 20000
                     };
 
-                    this.browser = await puppeteer.launch({
-                        ...fallbackConfig,
-                        timeout: 20000, // Even shorter timeout for fallback
-                        protocolTimeout: 20000
-                    });
+                    if (chromePath) {
+                        fallbackOptions.executablePath = chromePath;
+                    }
+
+                    this.browser = await puppeteer.launch(fallbackOptions);
 
                     console.log('Fallback headless browser launched successfully');
 
@@ -263,138 +265,95 @@ class AmazonScraper {
 
     // Enhanced scraping method with category URLs (inspired by Bright Data approach)
     async scrapeTrendingProducts(limit: number = 20): Promise<Product[]> {
-        return this.retryOperation(async () => {
-            let page: Page | null = null;
-            try {
-                page = await this.createPage();
+        let page: Page | null = null;
+        try {
+            page = await this.createPage();
 
-                // Use specific category URLs for better results (inspired by Bright Data approach)
-                const categoryUrls = [
-                    'https://www.amazon.com/gp/bestsellers/electronics/',
-                    'https://www.amazon.com/gp/bestsellers/office-products/',
-                    'https://www.amazon.com/gp/bestsellers/wireless/',
-                    'https://www.amazon.com/gp/bestsellers/'
-                ];
+            // Navigate to Amazon Best Sellers Electronics
+            const targetUrl = 'https://www.amazon.com/gp/bestsellers/electronics/';
+            if (!targetUrl) {
+                throw new Error('Target URL is required');
+            }
 
-                console.log('Navigating to Amazon Best Sellers categories...');
+            console.log(`Navigating to: ${targetUrl}`);
 
-                // Try the electronics category first (more reliable)
-                const targetUrl = categoryUrls[0];
-                console.log(`Targeting: ${targetUrl}`);
+            await page.goto(targetUrl, {
+                waitUntil: 'domcontentloaded',
+                timeout: 45000
+            });
 
-                // Add human-like behavior for local browser
-                if (this.useLocalBrowser) {
-                    console.log('Using local browser - adding human-like navigation behavior...');
+            // Wait for page to stabilize
+            await delay(3000);
 
-                    // First navigate to Amazon homepage to establish session
-                    await page.goto('https://www.amazon.com/', {
-                        waitUntil: 'domcontentloaded',
-                        timeout: 45000
-                    });
+            // Try to find products using multiple approaches
+            await page.waitForSelector('[data-asin], .zg-grid-general-faceout, .p13n-sc-uncoverable-faceout', { timeout: 15000 });
 
-                    // Human-like delay and scroll
-                    await delay(Math.random() * 2000 + 1000);
-                    await page.evaluate(() => window.scrollTo(0, 200));
-                    await delay(Math.random() * 1500 + 500);
+            let allProducts: Product[] = [];
+            let scrollAttempts = 0;
+            const maxScrollAttempts = 6;
+            const targetProducts = Math.min(limit, 50);
 
-                    // Now navigate to target category
-                    await page.goto(targetUrl, {
-                        waitUntil: 'domcontentloaded',
-                        timeout: 45000
-                    });
-                } else {
-                    // Direct navigation for headless mode
-                    await page.goto(targetUrl, {
-                        waitUntil: 'domcontentloaded',
-                        timeout: 45000
-                    });
-                }
+            console.log(`Starting extraction for up to ${targetProducts} products...`);
 
-                // Wait for page to stabilize
-                const stabilizeDelay = this.useLocalBrowser ?
-                    Math.random() * 4000 + 3000 : // 3-7 seconds for local browser
-                    Math.random() * 3000 + 2000;   // 2-5 seconds for headless
-                await delay(stabilizeDelay);
+            while (allProducts.length < targetProducts && scrollAttempts < maxScrollAttempts) {
+                console.log(`\n--- Extraction Attempt ${scrollAttempts + 1}/${maxScrollAttempts} ---`);
+                console.log(`Current products: ${allProducts.length}/${targetProducts}`);
 
-                // Try multiple selectors for product elements
-                const productSelectors = [
-                    '[data-testid="bestsellers-productCard"]',
-                    '.zg-grid-general-faceout',
-                    '.a-carousel-card',
-                    '.s-result-item',
-                    '[data-component-type="s-search-result"]',
-                    '.zg-item-immersion'
-                ];
-
-                let productsFound = false;
-                for (const selector of productSelectors) {
-                    try {
-                        await page.waitForSelector(selector, { timeout: 10000 });
-                        productsFound = true;
-                        console.log(`Found products using selector: ${selector}`);
-                        break;
-                    } catch (error) {
-                        console.log(`Selector ${selector} not found, trying next...`);
-                    }
-                }
-
-                if (!productsFound) {
-                    throw new Error('No product elements found on the page');
-                }
-
-                // Add human-like behavior before scraping
-                if (this.useLocalBrowser) {
-                    console.log('Simulating human browsing behavior...');
-
-                    // Scroll down slowly to load more content
-                    await page.evaluate(async () => {
-                        const scrollDelay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-                        for (let i = 0; i < 3; i++) {
-                            window.scrollBy(0, 300);
-                            await scrollDelay(800 + Math.random() * 400);
-                        }
-                        // Scroll back to top
-                        window.scrollTo(0, 0);
-                        await scrollDelay(500);
-                    });
-
-                    await delay(Math.random() * 2000 + 1500);
-                } else {
-                    // Simple delay for headless mode
-                    await delay(Math.random() * 2000 + 1000);
-                }
-
-                console.log('Extracting product data...');
-
-                // Extract product information with improved selectors
-                const products = await page.evaluate((limit: number): Product[] => {
-                    const productElements = document.querySelectorAll([
-                        '[data-testid="bestsellers-productCard"]',
-                        '.zg-grid-general-faceout',
-                        '.zg-item-immersion',
-                        '.a-carousel-card',
-                        '.s-result-item'
-                    ].join(', '));
-
+                // Extract products from current view
+                const currentProducts = await page.evaluate((): Product[] => {
                     const results: Product[] = [];
-                    const maxResults = Math.min(productElements.length, limit);
 
-                    for (let i = 0; i < maxResults; i++) {
+                    // Try multiple selector approaches
+                    let productElements: Element[] = [];
+
+                    // Method 1: User's specific selector path
+                    const cardContainer = document.querySelector('#CardInstanceLxwOSGw9ibw7kseHPvQbcw');
+                    if (cardContainer) {
+                        const gridRows = cardContainer.querySelectorAll('.p13n-gridRow._cDEzb_grid-row_3Cywl');
+                        gridRows.forEach(row => {
+                            const rowProducts = row.querySelectorAll('[data-asin]');
+                            productElements.push(...Array.from(rowProducts));
+                        });
+                        console.log(`Method 1 (specific path): Found ${productElements.length} products`);
+                    }
+
+                    // Method 2: Generic data-asin search
+                    if (productElements.length < 10) {
+                        const genericProducts = document.querySelectorAll('[data-asin]');
+                        genericProducts.forEach(product => {
+                            if (!productElements.includes(product)) {
+                                productElements.push(product);
+                            }
+                        });
+                        console.log(`Method 2 (generic): Total ${productElements.length} products`);
+                    }
+
+                    // Method 3: Best sellers specific selectors
+                    if (productElements.length < 5) {
+                        const bestSellerProducts = document.querySelectorAll('.zg-grid-general-faceout, .p13n-sc-uncoverable-faceout, .zg-item-immersion');
+                        bestSellerProducts.forEach(product => {
+                            if (!productElements.includes(product)) {
+                                productElements.push(product);
+                            }
+                        });
+                        console.log(`Method 3 (best sellers): Total ${productElements.length} products`);
+                    }
+
+                    // Extract data from found elements
+                    for (let i = 0; i < productElements.length; i++) {
                         const element = productElements[i];
-                        if (!element) continue;
+                        if (!element || !(element instanceof HTMLElement)) continue;
 
                         try {
-                            // Enhanced title extraction
+                            // Extract title
                             let title = '';
                             const titleSelectors = [
+                                '._cDEzb_p13n-sc-css-line-clamp-3_g3dy1',
                                 '.p13n-sc-truncate',
                                 '.s-title',
                                 '.a-size-base-plus',
-                                '.a-size-medium',
                                 'h2 span',
-                                'h3 span',
-                                '.zg-text-center p',
-                                'span[class*="truncate"]'
+                                'h3 span'
                             ];
 
                             for (const selector of titleSelectors) {
@@ -407,14 +366,13 @@ class AmazonScraper {
 
                             if (!title || title.length < 5) continue;
 
-                            // Enhanced price extraction
+                            // Extract price
                             let price = 'Price not available';
                             const priceSelectors = [
+                                '._cDEzb_p13n-sc-price_3mJ9Z',
                                 '.p13n-sc-price',
-                                '.a-price-whole',
                                 '.a-price .a-offscreen',
-                                '.sx-price',
-                                'span[class*="price"]'
+                                '.a-price-whole'
                             ];
 
                             for (const selector of priceSelectors) {
@@ -425,82 +383,99 @@ class AmazonScraper {
                                 }
                             }
 
-                            // Enhanced rating extraction
-                            let rating = 'N/A';
+                            // Extract rating
+                            let rating = 'No rating';
                             const ratingSelectors = [
-                                '.a-icon-alt',
-                                '[data-testid="star-rating"]',
-                                '.sx-stars',
-                                'span[class*="rating"]'
+                                '._cDEzb_p13n-sc-rating_3mJ9Z',
+                                '.a-icon-star',
+                                '.a-star-medium'
                             ];
 
                             for (const selector of ratingSelectors) {
                                 const ratingEl = element.querySelector(selector);
-                                if (ratingEl && ratingEl.textContent?.includes('out of')) {
+                                if (ratingEl && ratingEl.textContent?.trim()) {
                                     rating = ratingEl.textContent.trim();
                                     break;
                                 }
                             }
 
-                            // Enhanced image extraction
-                            let image: string | null = null;
-                            const imageSelectors = [
-                                'img[src*="amazon.com"]',
-                                '.a-dynamic-image',
-                                'img[data-src]'
-                            ];
+                            // Extract image URL
+                            let imageUrl = null;
+                            const imgEl = element.querySelector('img');
+                            if (imgEl instanceof HTMLImageElement && imgEl.src) {
+                                imageUrl = imgEl.src;
+                            }
 
-                            for (const selector of imageSelectors) {
-                                const imgEl = element.querySelector(selector) as HTMLImageElement;
-                                if (imgEl && (imgEl.src || imgEl.dataset.src)) {
-                                    image = imgEl.src || imgEl.dataset.src || null;
-                                    break;
+                            // Extract product URL
+                            let productUrl = null;
+                            const linkEl = element.querySelector('a');
+                            if (linkEl instanceof HTMLAnchorElement && linkEl.href) {
+                                productUrl = linkEl.href;
+                            }
+
+                            // Extract ASIN
+                            let asin = '';
+                            const dataset = element.dataset;
+                            if (typeof dataset !== 'undefined' && typeof dataset.asin !== 'undefined') {
+                                asin = dataset.asin;
+                            } else if (productUrl) {
+                                const urlMatch = productUrl.match(/\/dp\/([A-Z0-9]{10})/);
+                                if (urlMatch && urlMatch[1]) {
+                                    asin = urlMatch[1];
                                 }
                             }
 
-                            // Enhanced link extraction
-                            let link: string | null = null;
-                            const linkEl = element.querySelector('a[href*="/dp/"], a[href*="/gp/product/"]') as HTMLAnchorElement;
-                            if (linkEl && linkEl.href) {
-                                link = linkEl.href.startsWith('http') ? linkEl.href : `https://www.amazon.com${linkEl.href}`;
-                            }
+                            if (!asin) continue;
 
                             results.push({
                                 rank: i + 1,
-                                title: title,
-                                price: price,
-                                rating: rating,
-                                image: image,
-                                link: link,
-                                source: 'Amazon Best Sellers (Enhanced)',
-                                scrapedAt: new Date().toISOString()
+                                title,
+                                price,
+                                rating,
+                                image: imageUrl,
+                                link: productUrl,
+                                source: 'Amazon Best Sellers',
+                                scrapedAt: new Date().toISOString(),
+                                asin
                             });
 
-                        } catch (extractError) {
-                            console.log(`Error extracting product ${i + 1}:`, extractError);
+                        } catch (error) {
+                            console.error('Error extracting product data:', error);
                             continue;
                         }
                     }
 
                     return results;
-                }, limit);
+                });
 
-                if (products.length === 0) {
-                    throw new Error('No products extracted from page');
+                if (currentProducts.length > 0) {
+                    allProducts.push(...currentProducts);
+                    console.log(`✅ Extracted ${currentProducts.length} products in this view`);
                 }
 
-                console.log(`Successfully scraped ${products.length} products`);
-                return products;
+                // Scroll to load more products
+                await page.evaluate(() => {
+                    window.scrollTo(0, document.body.scrollHeight);
+                });
 
-            } catch (error) {
-                console.error('Enhanced scraping failed:', (error as Error).message);
-                throw error;
-            } finally {
-                if (page) {
-                    await page.close();
-                }
+                await delay(2000);
+                scrollAttempts++;
             }
-        }, 'Enhanced Multi-Category Scraping');
+
+            console.log(`\n=== Scraping Complete ===`);
+            console.log(`Total products found: ${allProducts.length}`);
+            console.log(`Scroll attempts: ${scrollAttempts}`);
+
+            return allProducts.slice(0, limit);
+
+        } catch (error) {
+            console.error('Error during scraping:', error);
+            throw error;
+        } finally {
+            if (page) {
+                await page.close();
+            }
+        }
     }
 
     // Fallback method that returns sample data when scraping fails
@@ -623,7 +598,7 @@ class AmazonScraper {
                 const regex = new RegExp(pattern.source, pattern.flags);
 
                 while ((match = regex.exec(html)) !== null && rank <= limit) {
-                    const title = match[1].trim();
+                    const title = match && match[1] ? match[1].trim() : '';
 
                     // Better title validation
                     if (title &&

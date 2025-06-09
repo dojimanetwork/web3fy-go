@@ -1,4 +1,4 @@
-import puppeteer, { Browser, Page } from 'puppeteer';
+import puppeteer, { Browser, Page, PuppeteerLaunchOptions } from 'puppeteer';
 import { delay } from '../utils/helpers';
 import { Product, BrowserConfig } from '../types';
 import { execSync } from 'child_process';
@@ -51,9 +51,8 @@ class EnhancedAmazonScraper {
         if (!this.browser) {
             const chromePath = this.getChromeExecutablePath();
 
-            const config: BrowserConfig = {
+            const launchOptions: PuppeteerLaunchOptions = {
                 headless: this.useLocalBrowser ? false : 'new',
-                executablePath: chromePath,
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
@@ -61,14 +60,16 @@ class EnhancedAmazonScraper {
                     '--disable-web-security',
                     '--disable-blink-features=AutomationControlled',
                     '--start-maximized'
-                ]
-            };
-
-            this.browser = await puppeteer.launch({
-                ...config,
+                ],
                 timeout: 30000,
                 defaultViewport: null
-            });
+            };
+
+            if (chromePath) {
+                launchOptions.executablePath = chromePath;
+            }
+
+            this.browser = await puppeteer.launch(launchOptions);
 
             console.log('Enhanced browser launched successfully');
         }

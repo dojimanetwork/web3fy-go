@@ -8,15 +8,24 @@ export class DatabaseService {
     private convertToDbProduct(product: Product, category: string = 'electronics'): Omit<DatabaseProduct, 'id' | 'created_at' | 'updated_at'> {
         // Extract ASIN from source or link
         let asin = '';
-        if (product.source && product.source.includes('ASIN:')) {
-            asin = product.source.split('ASIN:')[1].trim();
-        } else if (product.link && product.link.includes('/dp/')) {
+        if (product.source?.includes('ASIN:')) {
+            const parts = product.source.split('ASIN:');
+            if (parts.length > 1 && parts[1]) {
+                asin = parts[1].trim();
+            }
+        } else if (product.link?.includes('/dp/')) {
             const match = product.link.match(/\/dp\/([A-Z0-9]{10})/);
-            if (match) asin = match[1];
+            if (match && match[1]) {
+                asin = match[1];
+            }
+        }
+
+        if (!asin) {
+            throw new Error('ASIN is required for database product');
         }
 
         return {
-            asin: asin || undefined,
+            asin,
             rank: typeof product.rank === 'string' ? parseInt(product.rank) || 0 : product.rank,
             title: product.title,
             price: product.price,
@@ -168,7 +177,7 @@ export class DatabaseService {
     }
 
     // Check if we have fresh data (less than specified hours old)
-    async hasFreshData(category: string = 'electronics', maxAgeHours: number = 24): Promise<{ hasFresh: boolean; count: number; lastScraped?: Date }> {
+    async hasFreshData(category: string = 'electronics', maxAgeHours: number = 24): Promise<{ hasFresh: boolean; count: number; lastScraped: Date | null }> {
         const client = await pool.connect();
 
         try {
@@ -186,7 +195,7 @@ export class DatabaseService {
             return {
                 hasFresh: count > 0,
                 count,
-                lastScraped: lastScraped ? new Date(lastScraped) : undefined
+                lastScraped: lastScraped ? new Date(lastScraped) : null
             };
 
         } catch (error) {

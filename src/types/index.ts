@@ -71,7 +71,7 @@ export interface ScrapingOptions {
 export interface BrowserConfig {
     headless: boolean | 'new';
     args: string[];
-    executablePath?: string;
+    executablePath: string | undefined;
 }
 
 // Helper function types
