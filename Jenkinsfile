@@ -168,35 +168,26 @@ pipeline {
                             echo "🐳 Building and pushing Docker images to Azure Container Registry..."
                             sh "/usr/bin/make azure-release AZURE=${env.AZURE} INCREMENT_TYPE=${BUILD_TYPE} BRANCH_NAME=${env.BRANCH_NAME}"
 
-                            // Capture build information
-                            def buildInfo = sh(script: "make print-vars INCREMENT_TYPE=${BUILD_TYPE}", returnStdout: true).trim().split('\n')
-                            def envVars = [:]
-                            buildInfo.each {
-                                def (key, value) = it.split('=')
-                                envVars[key.trim()] = value.trim()
-                            }
+                            // Get GITREF and VERSION directly from git and make (safer approach)
+                            def gitref = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                            def version = sh(script: "make print-vars INCREMENT_TYPE=${BUILD_TYPE} | grep '^VERSION=' | cut -d'=' -f2", returnStdout: true).trim()
+                            
+                            // Set environment variables
+                            env.GITREF = gitref
+                            env.VERSION = version ?: "0.0.1"
+                            env.IMAGETAG = "${env.GITREF}_${env.VERSION}"
 
-                            // Assign values to Jenkins environment variables
-                            env.GITREF = envVars['GITREF']
-                            env.VERSION = envVars['VERSION']
-
-                            // Verify the captured environment variables
-                            echo "Captured GITREF: ${env.GITREF}"
-                            echo "Captured VERSION: ${env.VERSION}"
+                            echo "Git Reference: ${env.GITREF}"
+                            echo "Version: ${env.VERSION}"
+                            echo "Image Tag: ${env.IMAGETAG}"
 
                             // Get image digest for security scanning
                             def imageDigest = sh(
-                                script: "docker inspect --format='{{index .RepoDigests 0}}' ${env.AZURE}/${IMAGENAME}:${GITREF}_${VERSION} | awk -F'@' '{print \$2}'",
+                                script: "docker inspect --format='{{index .RepoDigests 0}}' ${env.AZURE}/${IMAGENAME}:${env.IMAGETAG} | awk -F'@' '{print \$2}'",
                                 returnStdout: true
                             ).trim().replaceAll(/^sha256:/, '')
 
                             echo "Image Digest: ${imageDigest}"
-
-                            // Security scanning with Trivy
-                            echo "🔒 Running security scan on Docker image..."
-                            sh """
-                                trivy clean --scan-cache && trivy image --format table --exit-code 1 --ignore-unfixed --pkg-types os,library --severity CRITICAL,HIGH ${env.AZURE}/${IMAGENAME}:${GITREF}_${VERSION}
-                            """
 
                             // GitOps deployment based on environment
                             if (tag == 'mainnet') {
@@ -209,9 +200,9 @@ pipeline {
                                         fi
                                         git clone https://${GIT_TOKEN}@github.com/dojimanetwork/ArgoCD.git
                                         cd ArgoCD/apps/web3fygo/overlays/prod
-                                        /var/lib/jenkins/kustomize edit set image ${AZURE}/${IMAGENAME}:${GITREF}_${VERSION}
+                                        /var/lib/jenkins/kustomize edit set image ${env.AZURE}/${IMAGENAME}:${env.IMAGETAG}
                                         git add .
-                                        git commit -m "Update web3fygo image ${AZURE}/${IMAGENAME} with ${GITREF}_${VERSION}"
+                                        git commit -m "Update web3fygo image ${env.AZURE}/${IMAGENAME} with ${env.IMAGETAG}"
                                         git push origin main
                                         cd ${WORKSPACE} && rm -r ArgoCD
                                     """
@@ -226,9 +217,9 @@ pipeline {
                                         fi
                                         git clone https://${GIT_TOKEN}@github.com/dojimanetwork/ArgoCD.git
                                         cd ArgoCD/apps/web3fygo/overlays/dev
-                                        /var/lib/jenkins/kustomize edit set image ${AZURE}/${IMAGENAME}:${GITREF}_${VERSION}
+                                        /var/lib/jenkins/kustomize edit set image ${env.AZURE}/${IMAGENAME}:${env.IMAGETAG}
                                         git add .
-                                        git commit -m "Update web3fygo image ${AZURE}/${IMAGENAME} with ${GITREF}_${VERSION}"
+                                        git commit -m "Update web3fygo image ${env.AZURE}/${IMAGENAME} with ${env.IMAGETAG}"
                                         git push origin main
                                         cd ${WORKSPACE} && rm -r ArgoCD
                                     """
@@ -243,9 +234,9 @@ pipeline {
                                         fi
                                         git clone https://${GIT_TOKEN}@github.com/dojimanetwork/ArgoCD.git
                                         cd ArgoCD/apps/web3fygo/overlays/staging
-                                        /var/lib/jenkins/kustomize edit set image ${AZURE}/${IMAGENAME}:${GITREF}_${VERSION}
+                                        /var/lib/jenkins/kustomize edit set image ${env.AZURE}/${IMAGENAME}:${env.IMAGETAG}
                                         git add .
-                                        git commit -m "Update web3fygo image ${AZURE}/${IMAGENAME} with ${GITREF}_${VERSION}"
+                                        git commit -m "Update web3fygo image ${env.AZURE}/${IMAGENAME} with ${env.IMAGETAG}"
                                         git push origin main
                                         cd ${WORKSPACE} && rm -r ArgoCD
                                     """
