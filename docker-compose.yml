@@ -1,6 +1,39 @@
-version: '3.8'
-
 services:
+  # Main Application
+  web3fygo-app:
+    build: .
+    container_name: web3fygo-app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=web3fygo
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - web3fygo-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: web3fygo-postgres
@@ -24,6 +57,25 @@ services:
     networks:
       - web3fygo-network
 
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: web3fygo-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - web3fygo-network
+
+  # PgAdmin for Database Management
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: web3fygo-pgadmin
@@ -44,6 +96,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
   pgadmin_data:
     driver: local
