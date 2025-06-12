@@ -509,24 +509,15 @@ router.get('/products', asyncHandler(async (req: Request, res: Response): Promis
         let dataSource = '';
         let sessionId: string | null = null;
 
-        // Check if we should skip cache (force refresh) or no fresh data available
-        if (!forceRefresh) {
-            const freshDataCheck = await dbService.hasFreshData(category, maxAgeHours);
+        // First try to get data from PostgreSQL
+        const dbProducts = await dbService.getProducts(productLimit, category, maxAgeHours);
 
-            if (freshDataCheck.hasFresh && freshDataCheck.count >= productLimit) {
-                console.log(`✅ Using cached data (${freshDataCheck.count} products, last scraped: ${freshDataCheck.lastScraped})`);
-                products = await dbService.getProducts(productLimit, category, maxAgeHours);
-
-                if (freshDataCheck.lastScraped) {
-                    const hoursOld = Math.round((Date.now() - freshDataCheck.lastScraped.getTime()) / (1000 * 60 * 60));
-                    dataSource = `Database Cache (${category}) - ${hoursOld} hours old`;
-                }
-            }
-        }
-
-        // If no cached data or force refresh, scrape new data
-        if (products.length === 0 || forceRefresh) {
-            console.log(forceRefresh ? '🔄 Force refresh requested - scraping new data' : '📡 No fresh cache available - scraping new data');
+        if (dbProducts.length > 0 && !forceRefresh) {
+            console.log(`✅ Using PostgreSQL data (${dbProducts.length} products)`);
+            products = dbProducts;
+            dataSource = `PostgreSQL Cache (${category})`;
+        } else {
+            console.log('📡 No PostgreSQL data available or force refresh requested - scraping new data');
 
             // Create scraping session
             sessionId = await dbService.createScrapingSession('amazon-scraper', category);
@@ -536,9 +527,9 @@ router.get('/products', asyncHandler(async (req: Request, res: Response): Promis
                 const scrapedProducts = await amazonScraper.getTrendingProducts(productLimit, trending, category);
 
                 if (scrapedProducts.length > 0) {
-                    // Save to database
+                    // Save to PostgreSQL
                     const savedCount = await dbService.saveProducts(scrapedProducts, category);
-                    console.log(`💾 Saved ${savedCount} products to database`);
+                    console.log(`💾 Saved ${savedCount} products to PostgreSQL`);
 
                     products = scrapedProducts;
                     dataSource = 'Live Scraping - Just scraped';
@@ -557,16 +548,14 @@ router.get('/products', asyncHandler(async (req: Request, res: Response): Promis
                     await dbService.updateScrapingSession(sessionId, false, 0, (scrapingError as Error).message);
                 }
 
-                // Try to get any cached data as fallback (even if older)
-                const fallbackProducts = await dbService.getProducts(productLimit, category, 72); // 3 days old
-                if (fallbackProducts.length > 0) {
-                    console.log(`📦 Using older cached data as fallback (${fallbackProducts.length} products)`);
-                    products = fallbackProducts;
-                    dataSource = 'Database Cache (Fallback) - Scraping failed';
-                } else {
-                    // Final fallback to scraper's internal fallback
+                // If scraping failed and we have no PostgreSQL data, use fallback
+                if (dbProducts.length === 0) {
                     products = await amazonScraper.getFallbackProducts(productLimit);
                     dataSource = 'Static Fallback Data - All other sources failed';
+                } else {
+                    // Use existing PostgreSQL data as fallback
+                    products = dbProducts;
+                    dataSource = 'PostgreSQL Cache (Fallback) - Scraping failed';
                 }
             }
         }
@@ -586,8 +575,11 @@ router.get('/products', asyncHandler(async (req: Request, res: Response): Promis
 
         // Create appropriate message based on data source
         let message = `Successfully retrieved ${products.length} products`;
-        if (dataSource.includes('Cache')) {
-            message += ' from database cache';
+        if (dataSource.includes('PostgreSQL')) {
+            message += ' from PostgreSQL';
+            if (dataSource.includes('Fallback')) {
+                message += ' (fallback)';
+            }
         } else if (dataSource.includes('Live')) {
             message += ' via live scraping';
         } else if (dataSource.includes('Fallback')) {
