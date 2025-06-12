@@ -41,7 +41,8 @@
         ]
     },
     "include": [
-        "src/**/*"
+        "src/**/*",
+        "tests/metadata.test.ts"
     ],
     "exclude": [
         "node_modules",
