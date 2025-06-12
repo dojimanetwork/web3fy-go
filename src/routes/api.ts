@@ -4,8 +4,10 @@ import enhancedScraper from '../services/scraper_enhanced';
 import { asyncHandler, successResponse, errorResponse } from '../utils/helpers';
 import { User, ProductsResponse } from '../types';
 import { dbService } from '../services/database';
+import { MetadataService, Metadata } from '../services/metadata';
 
 const router: Router = express.Router();
+const metadataService = new MetadataService();
 
 // Get API status
 router.get('/status', (req: Request, res: Response): void => {
@@ -50,7 +52,10 @@ router.get('/info', (req: Request, res: Response): void => {
             'GET /api/product/details?url={amazonUrl}',
             'GET /api/database/stats',
             'POST /api/database/cleanup',
-            'POST /api/products/refresh'
+            'POST /api/products/refresh',
+            'GET /api/metadata',
+            'POST /api/metadata',
+            'DELETE /api/metadata'
         ]
     });
 });
@@ -474,7 +479,7 @@ router.get('/products-enhanced', asyncHandler(async (req: Request, res: Response
 
 // Products endpoint with database caching
 router.get('/products', asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const { trending, limit = '20', force = 'false' }: { trending?: string; limit?: string; force?: string } = req.query as Record<string, string>;
+    const { trending, category = 'electronics', limit = '20', force = 'false' }: { trending?: string; category?: string; limit?: string; force?: string } = req.query as Record<string, string>;
 
     // Validate parameters
     if (!trending) {
@@ -495,11 +500,10 @@ router.get('/products', asyncHandler(async (req: Request, res: Response): Promis
 
     const productLimit = Math.min(parseInt(limit) || 10, 50); // Max 50 products
     const forceRefresh = force === 'true';
-    const category = 'electronics'; // Default category
     const maxAgeHours = parseInt(process.env.CACHE_MAX_AGE_HOURS || '24');
 
     try {
-        console.log(`Fetching ${productLimit} trending products from Amazon...`);
+        console.log(`Fetching ${productLimit} trending products from Amazon ${category}...`);
 
         let products: any[] = [];
         let dataSource = '';
@@ -528,8 +532,8 @@ router.get('/products', asyncHandler(async (req: Request, res: Response): Promis
             sessionId = await dbService.createScrapingSession('amazon-scraper', category);
 
             try {
-                // Scrape new products
-                const scrapedProducts = await amazonScraper.getTrendingProducts(productLimit);
+                // Scrape new products using metadata URL
+                const scrapedProducts = await amazonScraper.getTrendingProducts(productLimit, trending, category);
 
                 if (scrapedProducts.length > 0) {
                     // Save to database
@@ -573,9 +577,9 @@ router.get('/products', asyncHandler(async (req: Request, res: Response): Promis
             source: dataSource || (products.length > 0 ? products[0].source : 'Unknown'),
             parameters: {
                 trending,
+                category,
                 limit: productLimit,
                 ...(forceRefresh && { forceRefresh: true }),
-                category,
                 maxAgeHours
             }
         };
@@ -808,6 +812,149 @@ router.post('/products/refresh', asyncHandler(async (req: Request, res: Response
         res.status(500).json(errorResponse(
             'Refresh failed',
             `Unable to refresh products: ${(error as Error).message}`
+        ));
+    }
+}));
+
+// Metadata endpoint
+router.get('/metadata', asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { type, category } = req.query as { type?: string; category?: string };
+
+    if (!type) {
+        res.status(400).json(errorResponse(
+            'Missing required parameter',
+            'The "type" parameter is required'
+        ));
+        return;
+    }
+
+    try {
+        const metadata = await metadataService.getMetadata(type, category);
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            message: category === 'all' ?
+                `Successfully retrieved metadata for all categories of type ${type}` :
+                `Successfully retrieved metadata for type ${type}${category ? ` and category ${category}` : ''}`,
+            data: {
+                metadata,
+                parameters: {
+                    type,
+                    ...(category && { category })
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching metadata:', error);
+        res.status(500).json(errorResponse(
+            'Service unavailable',
+            'Unable to fetch metadata at this time. Please try again later.'
+        ));
+    }
+}));
+
+router.post('/metadata', asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { type, category, url, description } = req.body as Metadata;
+
+    if (!type || !category || !url) {
+        res.status(400).json(errorResponse(
+            'Missing required fields',
+            'Type, category, and URL are required'
+        ));
+        return;
+    }
+
+    try {
+        const metadata = await metadataService.upsertMetadata({
+            type,
+            category,
+            url,
+            description: description || undefined
+        });
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            message: 'Successfully updated metadata',
+            data: {
+                metadata,
+                parameters: { type, category }
+            }
+        });
+    } catch (error) {
+        console.error('Error updating metadata:', error);
+        res.status(500).json(errorResponse(
+            'Service unavailable',
+            'Unable to update metadata at this time. Please try again later.'
+        ));
+    }
+}));
+
+router.delete('/metadata', asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { type, category } = req.query as { type?: string; category?: string };
+
+    if (!type || !category) {
+        res.status(400).json(errorResponse(
+            'Missing required parameters',
+            'Both "type" and "category" parameters are required'
+        ));
+        return;
+    }
+
+    try {
+        await metadataService.deleteMetadata(type, category);
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            message: 'Successfully deleted metadata',
+            data: {
+                parameters: { type, category }
+            }
+        });
+    } catch (error) {
+        console.error('Error deleting metadata:', error);
+        res.status(500).json(errorResponse(
+            'Service unavailable',
+            'Unable to delete metadata at this time. Please try again later.'
+        ));
+    }
+}));
+
+// Categories endpoint
+router.get('/categories', asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { type } = req.query as { type?: string };
+
+    if (!type) {
+        res.status(400).json(errorResponse(
+            'Missing required parameter',
+            'The "type" parameter is required'
+        ));
+        return;
+    }
+
+    try {
+        const metadata = await metadataService.getMetadata(type);
+        const categories = metadata.map(item => ({
+            category: item.category,
+            url: item.url,
+            description: item.description
+        }));
+
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            message: `Successfully retrieved categories for type ${type}`,
+            data: {
+                categories,
+                parameters: {
+                    type
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        res.status(500).json(errorResponse(
+            'Service unavailable',
+            'Unable to fetch categories at this time. Please try again later.'
         ));
     }
 }));

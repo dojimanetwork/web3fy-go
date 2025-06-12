@@ -3,6 +3,7 @@ import { delay } from '../utils/helpers';
 import { Product, BrowserConfig, ScrapingOptions } from '../types';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
+import { pool } from '../config/database';
 
 class AmazonScraper {
     private browser: Browser | null = null;
@@ -231,17 +232,33 @@ class AmazonScraper {
         throw lastError!;
     }
 
-    // Enhanced scraping method with category URLs (inspired by Bright Data approach)
-    async scrapeTrendingProducts(limit: number = 20): Promise<Product[]> {
+    // Get URL from metadata table
+    private async getScrapingUrl(type: string, category: string): Promise<string> {
+        const client = await pool.connect();
+        try {
+            const query = 'SELECT url FROM metadata WHERE type = $1 AND category = $2';
+            const result = await client.query(query, [type, category]);
+
+            if (result.rows.length === 0) {
+                // Default to electronics if no metadata found
+                return 'https://www.amazon.com/gp/bestsellers/electronics/';
+            }
+
+            return result.rows[0].url;
+        } finally {
+            client.release();
+        }
+    }
+
+    // Enhanced scraping method with category URLs from metadata
+    async scrapeTrendingProducts(limit: number = 20, type: string = 'amazon', category: string = 'electronics'): Promise<Product[]> {
         let page: Page | null = null;
         try {
             page = await this.createPage();
 
-            // Navigate to Amazon Best Sellers Electronics
-            const targetUrl = 'https://www.amazon.com/gp/bestsellers/electronics/';
-            if (!targetUrl) {
-                throw new Error('Target URL is required');
-            }
+            // Get URL from metadata table
+            const targetUrl = await this.getScrapingUrl(type, category);
+            console.log(`Using URL from metadata: ${targetUrl}`);
 
             console.log(`Navigating to: ${targetUrl}`);
 
@@ -432,6 +449,12 @@ class AmazonScraper {
             console.log(`\n=== Scraping Complete ===`);
             console.log(`Total products found: ${allProducts.length}`);
             console.log(`Scroll attempts: ${scrollAttempts}`);
+
+            // Update source in results to include category
+            allProducts = allProducts.map(product => ({
+                ...product,
+                source: `Amazon ${category.charAt(0).toUpperCase() + category.slice(1)} Best Sellers`
+            }));
 
             return allProducts.slice(0, limit);
 
@@ -822,8 +845,8 @@ class AmazonScraper {
         }
     }
 
-    // Enhanced scraping method with multiple fallback strategies
-    async getTrendingProducts(limit: number = 20): Promise<Product[]> {
+    // Update getTrendingProducts to accept type and category
+    async getTrendingProducts(limit: number = 20, type: string = 'amazon', category: string = 'electronics'): Promise<Product[]> {
         // Check if browser is available, if not skip directly to HTTP-only
         const skipBrowser = process.env.SKIP_BROWSER === 'true';
 
@@ -838,8 +861,8 @@ class AmazonScraper {
         }
 
         try {
-            // First try the main browser-based scraping method
-            return await this.scrapeTrendingProducts(limit);
+            // First try the main browser-based scraping method with type and category
+            return await this.scrapeTrendingProducts(limit, type, category);
         } catch (error) {
             console.error('Browser-based scraping failed:', (error as Error).message);
 

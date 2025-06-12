@@ -18,6 +18,21 @@ CREATE TABLE IF NOT EXISTS products (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create metadata table
+CREATE TABLE IF NOT EXISTS metadata (
+    id SERIAL PRIMARY KEY,
+    type VARCHAR(50) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    url TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(type, category)
+);
+
+-- Create index on metadata type and category
+CREATE INDEX IF NOT EXISTS idx_metadata_type_category ON metadata(type, category);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_products_asin ON products(asin);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
@@ -92,6 +107,20 @@ BEGIN
         (SELECT MAX(scraped_at) FROM products) as newest_product;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Add trigger to update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_metadata_updated_at
+    BEFORE UPDATE ON metadata
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 
 -- Grant permissions (if needed)
 -- GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;

@@ -2,7 +2,7 @@
     "info": {
         "_postman_id": "web3fygo-api-collection",
         "name": "Web3FyGo API",
-        "description": "A comprehensive collection for testing the Web3FyGo TypeScript API endpoints including authentication, product scraping, and user management.",
+        "description": "API collection for Web3FyGo product scraping and metadata management",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "_exporter_id": "web3fygo"
     },
@@ -561,95 +561,10 @@
             "description": "User management endpoints for creating and retrieving users"
         },
         {
-            "name": "Product Scraping",
+            "name": "Products",
             "item": [
                 {
-                    "name": "Get Trending Products - Amazon",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 200 or 500\", function () {",
-                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 500]);",
-                                    "});",
-                                    "",
-                                    "if (pm.response.code === 200) {",
-                                    "    pm.test(\"Products response is valid\", function () {",
-                                    "        var jsonData = pm.response.json();",
-                                    "        pm.expect(jsonData.success).to.eql(true);",
-                                    "        pm.expect(jsonData.data.products).to.be.an('array');",
-                                    "        pm.expect(jsonData.data.products.length).to.be.above(0);",
-                                    "    });",
-                                    "    ",
-                                    "    pm.test(\"Products have required fields\", function () {",
-                                    "        var jsonData = pm.response.json();",
-                                    "        if (jsonData.data.products.length > 0) {",
-                                    "            var product = jsonData.data.products[0];",
-                                    "            pm.expect(product).to.have.property('title');",
-                                    "            pm.expect(product).to.have.property('price');",
-                                    "            pm.expect(product).to.have.property('source');",
-                                    "            pm.expect(product).to.have.property('scrapedAt');",
-                                    "        }",
-                                    "    });",
-                                    "    ",
-                                    "    pm.test(\"Response indicates data source\", function () {",
-                                    "        var jsonData = pm.response.json();",
-                                    "        var isFallback = jsonData.message.includes('fallback');",
-                                    "        var isCache = jsonData.message.includes('Database Cache') || jsonData.message.includes('cached');",
-                                    "        var isFresh = jsonData.message.includes('Live') || jsonData.message.includes('scraped');",
-                                    "        ",
-                                    "        if (isFallback) {",
-                                    "            console.log('Using fallback data due to scraping limitations');",
-                                    "        } else if (isCache) {",
-                                    "            console.log('Using cached data from PostgreSQL database - Fast response!');",
-                                    "        } else if (isFresh) {",
-                                    "            console.log('Successfully scraped fresh data from Amazon - Saved to database');",
-                                    "        } else {",
-                                    "            console.log('Data source: ' + jsonData.message);",
-                                    "        }",
-                                    "    });",
-                                    "} else {",
-                                    "    pm.test(\"Expected service error\", function () {",
-                                    "        var jsonData = pm.response.json();",
-                                    "        pm.expect(jsonData.success).to.eql(false);",
-                                    "        pm.expect(jsonData.error).to.eql('Service unavailable');",
-                                    "    });",
-                                    "}"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/products?trending=amazon&limit={{productLimit}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "products"
-                            ],
-                            "query": [
-                                {
-                                    "key": "trending",
-                                    "value": "amazon"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "{{productLimit}}"
-                                }
-                            ]
-                        },
-                        "description": "Fetch trending products from Amazon (may take 10-30 seconds)"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Enhanced Products - Amazon (Up to 50 with Scrolling)",
+                    "name": "Get Products",
                     "event": [
                         {
                             "listen": "test",
@@ -659,45 +574,58 @@
                                     "    pm.response.to.have.status(200);",
                                     "});",
                                     "",
-                                    "pm.test(\"Enhanced products response is valid\", function () {",
+                                    "pm.test(\"Response structure is valid\", function () {",
                                     "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.success).to.eql(true);",
-                                    "    pm.expect(jsonData.data.products).to.be.an('array');",
-                                    "    pm.expect(jsonData.data.products.length).to.be.above(0);",
-                                    "    pm.expect(jsonData.data.products.length).to.be.at.most(50);",
+                                    "    pm.expect(jsonData).to.have.property('success', true);",
+                                    "    pm.expect(jsonData).to.have.property('timestamp');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "    pm.expect(jsonData).to.have.property('data');",
                                     "});",
                                     "",
-                                    "pm.test(\"Enhanced products have comprehensive data\", function () {",
+                                    "pm.test(\"Products data is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.data).to.have.property('products');",
+                                    "    pm.expect(jsonData.data.products).to.be.an('array');",
+                                    "    pm.expect(jsonData.data).to.have.property('totalFound');",
+                                    "    pm.expect(jsonData.data).to.have.property('source');",
+                                    "    pm.expect(jsonData.data).to.have.property('parameters');",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Parameters are correct\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    var params = jsonData.data.parameters;",
+                                    "    pm.expect(params).to.have.property('trending', 'amazon');",
+                                    "    pm.expect(params).to.have.property('category');",
+                                    "    pm.expect(params).to.have.property('limit');",
+                                    "    pm.expect(params).to.have.property('maxAgeHours');",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Products have required fields\", function () {",
                                     "    var jsonData = pm.response.json();",
                                     "    if (jsonData.data.products.length > 0) {",
                                     "        var product = jsonData.data.products[0];",
-                                    "        pm.expect(product).to.have.property('rank');",
                                     "        pm.expect(product).to.have.property('title');",
                                     "        pm.expect(product).to.have.property('price');",
                                     "        pm.expect(product).to.have.property('rating');",
                                     "        pm.expect(product).to.have.property('source');",
-                                    "        pm.expect(product).to.have.property('scrapedAt');",
-                                    "        pm.expect(product.source).to.include('ASIN:');",
+                                    "        pm.expect(product.source).to.include(jsonData.data.parameters.category);",
                                     "    }",
                                     "});",
                                     "",
-                                    "pm.test(\"Enhanced scraping successfully extracted multiple products\", function () {",
+                                    "pm.test(\"Data source is correctly indicated\", function () {",
                                     "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.data.totalFound).to.be.above(1);",
-                                    "    pm.expect(jsonData.message).to.include('enhanced scraping with scrolling');",
-                                    "    console.log(`Successfully extracted ${jsonData.data.totalFound} products with enhanced scrolling`);",
-                                    "});",
+                                    "    var source = jsonData.data.source;",
+                                    "    var message = jsonData.message;",
                                     "",
-                                    "pm.test(\"Products contain real Amazon data\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    if (jsonData.data.products.length > 0) {",
-                                    "        var product = jsonData.data.products[0];",
-                                    "        pm.expect(product.source).to.include('Amazon Best Sellers');",
-                                    "        pm.expect(product.source).to.include('Electronics');",
-                                    "        // Check for real ASIN format",
-                                    "        var asinMatch = product.source.match(/ASIN: ([A-Z0-9]{10})/);",
-                                    "        pm.expect(asinMatch).to.not.be.null;",
-                                    "        console.log(`Sample product: ${product.title} - ${product.price} (ASIN: ${asinMatch[1]})`);",
+                                    "    if (source.includes('Cache')) {",
+                                    "        console.log('Using cached data from database');",
+                                    "        pm.expect(message).to.include('from database cache');",
+                                    "    } else if (source.includes('Live')) {",
+                                    "        console.log('Using live scraped data');",
+                                    "        pm.expect(message).to.include('via live scraping');",
+                                    "    } else if (source.includes('Fallback')) {",
+                                    "        console.log('Using fallback data');",
+                                    "        pm.expect(message).to.include('from fallback data');",
                                     "    }",
                                     "});"
                                 ],
@@ -709,158 +637,266 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/api/products-enhanced?trending=amazon&limit={{enhancedProductLimit}}",
+                            "raw": "{{baseUrl}}/api/products?trending=amazon&category=electronics&limit=5&force=false",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "api",
-                                "products-enhanced"
+                                "products"
                             ],
                             "query": [
                                 {
                                     "key": "trending",
-                                    "value": "amazon"
+                                    "value": "amazon",
+                                    "description": "Source of trending products (currently only 'amazon' is supported)"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "electronics",
+                                    "description": "Category of products to fetch (e.g., electronics, books, clothing, home, beauty, sports, toys, grocery)"
                                 },
                                 {
                                     "key": "limit",
-                                    "value": "{{enhancedProductLimit}}"
+                                    "value": "5",
+                                    "description": "Number of products to fetch (max 50)"
+                                },
+                                {
+                                    "key": "force",
+                                    "value": "false",
+                                    "description": "Force refresh data from source (bypass cache)"
                                 }
                             ]
                         },
-                        "description": "Fetch up to 50 trending products from Amazon using enhanced scraping with browser scrolling. Uses specific Amazon selectors and dynamic content loading."
+                        "description": "Get trending products from Amazon for a specific category. The endpoint supports caching and fallback mechanisms."
                     },
-                    "response": [
+                    "response": []
+                },
+                {
+                    "name": "Get Products - Missing Required Parameter",
+                    "event": [
                         {
-                            "name": "Success - Enhanced Products",
-                            "originalRequest": {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Error response is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success', false);",
+                                    "    pm.expect(jsonData).to.have.property('error', 'Missing required parameter');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/products?category=electronics&limit=5",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "electronics",
+                                    "description": "Category of products to fetch"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "5",
+                                    "description": "Number of products to fetch"
+                                }
+                            ]
+                        },
+                        "description": "Test validation - missing required 'trending' parameter"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Products - Invalid Trending Parameter",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Error response is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success', false);",
+                                    "    pm.expect(jsonData).to.have.property('error', 'Invalid trending parameter');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/products?trending=invalid&category=electronics&limit=5",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "trending",
+                                    "value": "invalid",
+                                    "description": "Invalid trending parameter"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "electronics",
+                                    "description": "Category of products to fetch"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "5",
+                                    "description": "Number of products to fetch"
+                                }
+                            ]
+                        },
+                        "description": "Test validation - invalid 'trending' parameter (only 'amazon' is supported)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Categories",
+                    "item": [
+                        {
+                            "name": "Get Categories",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"Status code is 200\", function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response structure is valid\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData).to.have.property('success', true);",
+                                            "    pm.expect(jsonData).to.have.property('timestamp');",
+                                            "    pm.expect(jsonData).to.have.property('message');",
+                                            "    pm.expect(jsonData).to.have.property('data');",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Categories data is valid\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData.data).to.have.property('categories');",
+                                            "    pm.expect(jsonData.data.categories).to.be.an('array');",
+                                            "    pm.expect(jsonData.data).to.have.property('parameters');",
+                                            "    pm.expect(jsonData.data.parameters).to.have.property('type', 'amazon');",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Category items have required fields\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    if (jsonData.data.categories.length > 0) {",
+                                            "        var category = jsonData.data.categories[0];",
+                                            "        pm.expect(category).to.have.property('category');",
+                                            "        pm.expect(category).to.have.property('url');",
+                                            "        pm.expect(category).to.have.property('description');",
+                                            "    }",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
                                 "method": "GET",
                                 "header": [],
                                 "url": {
-                                    "raw": "{{baseUrl}}/api/products-enhanced?trending=amazon&limit=30",
+                                    "raw": "{{baseUrl}}/api/categories?type=amazon",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
                                     "path": [
                                         "api",
-                                        "products-enhanced"
+                                        "categories"
                                     ],
                                     "query": [
                                         {
-                                            "key": "trending",
-                                            "value": "amazon"
-                                        },
-                                        {
-                                            "key": "limit",
-                                            "value": "30"
+                                            "key": "type",
+                                            "value": "amazon",
+                                            "description": "Type of categories to fetch (e.g., amazon)"
                                         }
                                     ]
-                                }
+                                },
+                                "description": "Get all categories for a specific type from the metadata table"
                             },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
+                            "response": []
+                        },
+                        {
+                            "name": "Get Categories - Missing Type",
+                            "event": [
                                 {
-                                    "key": "Content-Type",
-                                    "value": "application/json; charset=utf-8"
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test(\"Status code is 400\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Error response is valid\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData).to.have.property('success', false);",
+                                            "    pm.expect(jsonData).to.have.property('error', 'Missing required parameter');",
+                                            "    pm.expect(jsonData).to.have.property('message');",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
                                 }
                             ],
-                            "cookie": [],
-                            "body": "{\n    \"success\": true,\n    \"message\": \"Successfully retrieved 30 products using enhanced scraping with scrolling\",\n    \"data\": {\n        \"products\": [\n            {\n                \"rank\": \"1\",\n                \"title\": \"Blink Subscription Plus Plan with monthly auto-renewal\",\n                \"price\": \"$10.00\",\n                \"rating\": \"4.4 out of 5 stars\",\n                \"image\": \"https://images-na.ssl-images-amazon.com/images/I/316iIKOVz7L._AC_UL900_SR900,600_.png\",\n                \"link\": \"https://www.amazon.com/Blink-Plus-Plan-monthly-auto-renewal/dp/B08JHCVHTY/ref=zg_bs_g_electronics_d_sccl_1\",\n                \"source\": \"Amazon Best Sellers (Electronics) - ASIN: B08JHCVHTY\",\n                \"scrapedAt\": \"2025-06-06T04:17:06.251Z\"\n            }\n        ],\n        \"totalFound\": 30,\n        \"source\": \"Amazon Best Sellers (Electronics) - ASIN: B08JHCVHTY\",\n        \"parameters\": {\n            \"trending\": \"amazon\",\n            \"limit\": 30\n        }\n    }\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "Get Products - Missing Parameter",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 400\", function () {",
-                                    "    pm.response.to.have.status(400);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Missing parameter error\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.success).to.eql(false);",
-                                    "    pm.expect(jsonData.error).to.eql('Missing required parameter');",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/categories",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "categories"
+                                    ]
+                                },
+                                "description": "Test validation - missing required 'type' parameter"
+                            },
+                            "response": []
                         }
                     ],
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/products",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "products"
-                            ]
-                        },
-                        "description": "Test validation - missing trending parameter"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Products - Invalid Parameter",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 400\", function () {",
-                                    "    pm.response.to.have.status(400);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Invalid parameter error\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.success).to.eql(false);",
-                                    "    pm.expect(jsonData.error).to.eql('Invalid trending parameter');",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/products?trending=invalid",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "products"
-                            ],
-                            "query": [
-                                {
-                                    "key": "trending",
-                                    "value": "invalid"
-                                }
-                            ]
-                        },
-                        "description": "Test invalid parameter handling for products endpoint"
-                    },
-                    "response": []
+                    "description": "Category management endpoints for retrieving available categories"
                 }
             ],
             "description": "Product scraping endpoints for Amazon and other platforms"
         },
         {
-            "name": "Database Endpoints",
+            "name": "Metadata",
             "item": [
                 {
-                    "name": "Get Database Statistics",
+                    "name": "Get Metadata",
                     "event": [
                         {
                             "listen": "test",
@@ -870,18 +906,19 @@
                                     "    pm.response.to.have.status(200);",
                                     "});",
                                     "",
-                                    "pm.test(\"Database stats response is valid\", function () {",
+                                    "pm.test(\"Response structure is valid\", function () {",
                                     "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.success).to.eql(true);",
-                                    "    pm.expect(jsonData.data).to.have.property('database');",
-                                    "    pm.expect(jsonData.data).to.have.property('products');",
-                                    "    pm.expect(jsonData.data).to.have.property('sessions');",
+                                    "    pm.expect(jsonData).to.have.property('success', true);",
+                                    "    pm.expect(jsonData).to.have.property('timestamp');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "    pm.expect(jsonData).to.have.property('data');",
                                     "});",
                                     "",
-                                    "pm.test(\"Database connection is healthy\", function () {",
+                                    "pm.test(\"Metadata data is valid\", function () {",
                                     "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.data.database.connected).to.eql(true);",
-                                    "    pm.expect(jsonData.data.database.status).to.eql('healthy');",
+                                    "    pm.expect(jsonData.data).to.have.property('metadata');",
+                                    "    pm.expect(jsonData.data.metadata).to.be.an('array');",
+                                    "    pm.expect(jsonData.data).to.have.property('parameters');",
                                     "});"
                                 ],
                                 "type": "text/javascript"
@@ -892,52 +929,33 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/api/database/stats",
+                            "raw": "{{baseUrl}}/api/metadata?type=amazon&category=electronics",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "api",
-                                "database",
-                                "stats"
+                                "metadata"
+                            ],
+                            "query": [
+                                {
+                                    "key": "type",
+                                    "value": "amazon",
+                                    "description": "Type of metadata (e.g., amazon)"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "electronics",
+                                    "description": "Category of metadata (optional)"
+                                }
                             ]
                         },
-                        "description": "Get comprehensive database statistics including product counts, session data, and connection status"
+                        "description": "Get metadata for a specific type and optional category"
                     },
-                    "response": [
-                        {
-                            "name": "Success - Database Stats",
-                            "originalRequest": {
-                                "method": "GET",
-                                "header": [],
-                                "url": {
-                                    "raw": "{{baseUrl}}/api/database/stats",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "database",
-                                        "stats"
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json; charset=utf-8"
-                                }
-                            ],
-                            "cookie": [],
-                            "body": "{\n    \"success\": true,\n    \"message\": \"Database statistics retrieved successfully\",\n    \"data\": {\n        \"database\": {\n            \"connected\": true,\n            \"status\": \"healthy\",\n            \"connectionPool\": {\n                \"total\": 20,\n                \"idle\": 18,\n                \"waiting\": 0\n            }\n        },\n        \"products\": {\n            \"total\": 25,\n            \"categories\": {\n                \"electronics\": 15,\n                \"electronics-enhanced\": 10\n            },\n            \"recent\": {\n                \"last24Hours\": 25,\n                \"lastWeek\": 25\n            }\n        },\n        \"sessions\": {\n            \"total\": 12,\n            \"successful\": 10,\n            \"failed\": 2,\n            \"successRate\": \"83.33%\"\n        }\n    }\n}"
-                        }
-                    ]
+                    "response": []
                 },
                 {
-                    "name": "Clean Old Database Data",
+                    "name": "Create/Update Metadata",
                     "event": [
                         {
                             "listen": "test",
@@ -947,12 +965,69 @@
                                     "    pm.response.to.have.status(200);",
                                     "});",
                                     "",
-                                    "pm.test(\"Cleanup response is valid\", function () {",
+                                    "pm.test(\"Response structure is valid\", function () {",
                                     "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.success).to.eql(true);",
-                                    "    pm.expect(jsonData.data).to.have.property('cleaned');",
-                                    "    pm.expect(jsonData.data.cleaned).to.have.property('products');",
-                                    "    pm.expect(jsonData.data.cleaned).to.have.property('sessions');",
+                                    "    pm.expect(jsonData).to.have.property('success', true);",
+                                    "    pm.expect(jsonData).to.have.property('timestamp');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "    pm.expect(jsonData).to.have.property('data');",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Metadata was created/updated\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.data).to.have.property('metadata');",
+                                    "    pm.expect(jsonData.data.metadata).to.have.property('type', 'amazon');",
+                                    "    pm.expect(jsonData.data.metadata).to.have.property('category', 'electronics');",
+                                    "    pm.expect(jsonData.data.metadata).to.have.property('url');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"type\": \"amazon\",\n    \"category\": \"electronics\",\n    \"url\": \"https://www.amazon.com/gp/bestsellers/electronics/\",\n    \"description\": \"Amazon Electronics Best Sellers\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/metadata",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "metadata"
+                            ]
+                        },
+                        "description": "Create or update metadata for a specific type and category"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Metadata",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response structure is valid\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success', true);",
+                                    "    pm.expect(jsonData).to.have.property('timestamp');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "    pm.expect(jsonData).to.have.property('data');",
                                     "});"
                                 ],
                                 "type": "text/javascript"
@@ -963,531 +1038,33 @@
                         "method": "DELETE",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/api/database/cleanup?days={{cleanupDays}}",
+                            "raw": "{{baseUrl}}/api/metadata?type=amazon&category=electronics",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "api",
-                                "database",
-                                "cleanup"
+                                "metadata"
                             ],
                             "query": [
                                 {
-                                    "key": "days",
-                                    "value": "{{cleanupDays}}"
+                                    "key": "type",
+                                    "value": "amazon",
+                                    "description": "Type of metadata to delete"
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "electronics",
+                                    "description": "Category of metadata to delete"
                                 }
                             ]
                         },
-                        "description": "Clean up old database records older than specified days (default: 7 days)"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Force Refresh Products",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 200\", function () {",
-                                    "    pm.response.to.have.status(200);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Force refresh response is valid\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.success).to.eql(true);",
-                                    "    pm.expect(jsonData.data.products).to.be.an('array');",
-                                    "    pm.expect(jsonData.data.products.length).to.be.above(0);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Response indicates fresh scraping\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.message).to.include('Force refresh');",
-                                    "    pm.expect(jsonData.data).to.have.property('sessionId');",
-                                    "    console.log('Successfully forced refresh with session:', jsonData.data.sessionId);",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/products/refresh",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "products",
-                                "refresh"
-                            ]
-                        },
-                        "description": "Force refresh product data by bypassing cache and scraping fresh data"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Products with Force Refresh",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 200\", function () {",
-                                    "    pm.response.to.have.status(200);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Force refresh via query param works\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.success).to.eql(true);",
-                                    "    pm.expect(jsonData.message).to.include('Force refresh');",
-                                    "    pm.expect(jsonData.data.products).to.be.an('array');",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/products?trending=amazon&limit={{productLimit}}&force=true",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "products"
-                            ],
-                            "query": [
-                                {
-                                    "key": "trending",
-                                    "value": "amazon"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "{{productLimit}}"
-                                },
-                                {
-                                    "key": "force",
-                                    "value": "true"
-                                }
-                            ]
-                        },
-                        "description": "Fetch products with force refresh using query parameter to bypass cache"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Enhanced Products with Force Refresh",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 200\", function () {",
-                                    "    pm.response.to.have.status(200);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Enhanced force refresh works\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.success).to.eql(true);",
-                                    "    pm.expect(jsonData.message).to.include('Force refresh');",
-                                    "    pm.expect(jsonData.data.products).to.be.an('array');",
-                                    "    pm.expect(jsonData.data.products.length).to.be.above(0);",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/products-enhanced?trending=amazon&limit={{productLimit}}&force=true",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "products-enhanced"
-                            ],
-                            "query": [
-                                {
-                                    "key": "trending",
-                                    "value": "amazon"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "{{productLimit}}"
-                                },
-                                {
-                                    "key": "force",
-                                    "value": "true"
-                                }
-                            ]
-                        },
-                        "description": "Fetch enhanced products with force refresh using query parameter to bypass cache"
+                        "description": "Delete metadata for a specific type and category"
                     },
                     "response": []
                 }
             ],
-            "description": "Database management endpoints for PostgreSQL integration, caching, and data cleanup"
-        },
-        {
-            "name": "Individual Product Details",
-            "item": [
-                {
-                    "name": "Get Product Details by URL",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 200\", function () {",
-                                    "    pm.response.to.have.status(200);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Product details response is valid\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.success).to.eql(true);",
-                                    "    pm.expect(jsonData.data).to.have.property('product');",
-                                    "    pm.expect(jsonData.data.product).to.be.an('object');",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Product has required fields\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    var product = jsonData.data.product;",
-                                    "    pm.expect(product).to.have.property('title');",
-                                    "    pm.expect(product).to.have.property('price');",
-                                    "    pm.expect(product).to.have.property('rating');",
-                                    "    pm.expect(product).to.have.property('source');",
-                                    "    pm.expect(product).to.have.property('scrapedAt');",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Response indicates data source\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    var isCache = jsonData.message.includes('cache');",
-                                    "    var isFresh = jsonData.message.includes('scraping');",
-                                    "    ",
-                                    "    if (isCache) {",
-                                    "        console.log('Using cached product details from PostgreSQL database - Fast response!');",
-                                    "    } else if (isFresh) {",
-                                    "        console.log('Successfully scraped fresh product details from Amazon - Saved to database');",
-                                    "    } else {",
-                                    "        console.log('Product details source: ' + jsonData.message);",
-                                    "    }",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Product URL matches requested URL\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    var requestedUrl = pm.request.url.query.get('url');",
-                                    "    var productUrl = jsonData.data.product.link;",
-                                    "    pm.expect(productUrl).to.eql(requestedUrl);",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/product/details?url={{sampleAmazonUrl}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "product",
-                                "details"
-                            ],
-                            "query": [
-                                {
-                                    "key": "url",
-                                    "value": "{{sampleAmazonUrl}}"
-                                }
-                            ]
-                        },
-                        "description": "Scrape individual Amazon product details from a specific product URL. Uses database caching for faster subsequent requests."
-                    },
-                    "response": [
-                        {
-                            "name": "Success - Product Details",
-                            "originalRequest": {
-                                "method": "GET",
-                                "header": [],
-                                "url": {
-                                    "raw": "{{baseUrl}}/api/product/details?url=https://www.amazon.com/dp/B08N5WRWNW",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "api",
-                                        "product",
-                                        "details"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "url",
-                                            "value": "https://www.amazon.com/dp/B08N5WRWNW"
-                                        }
-                                    ]
-                                }
-                            },
-                            "status": "OK",
-                            "code": 200,
-                            "_postman_previewlanguage": "json",
-                            "header": [
-                                {
-                                    "key": "Content-Type",
-                                    "value": "application/json; charset=utf-8"
-                                }
-                            ],
-                            "cookie": [],
-                            "body": "{\n    \"success\": true,\n    \"message\": \"Successfully retrieved product details via live scraping\",\n    \"data\": {\n        \"product\": {\n            \"rank\": \"1\",\n            \"title\": \"Echo Dot (5th Gen) | Smart speaker with bigger vibrant sound and Alexa\",\n            \"price\": \"$49.99\",\n            \"rating\": \"4.7 out of 5 stars\",\n            \"image\": \"https://m.media-amazon.com/images/I/714Rq4k05UL._AC_SL1500_.jpg\",\n            \"link\": \"https://www.amazon.com/dp/B08N5WRWNW\",\n            \"source\": \"Amazon Product Detail - ASIN: B08N5WRWNW\",\n            \"scrapedAt\": \"2024-06-06T12:00:00.000Z\",\n            \"asin\": \"B08N5WRWNW\",\n            \"availability\": \"In Stock\",\n            \"reviewCount\": \"50,000+ reviews\",\n            \"brand\": \"Amazon\",\n            \"features\": [\n                \"Bigger vibrant sound – In a compact design, Echo Dot delivers crisp vocals and balanced bass for full sound.\",\n                \"Your favorite music and content – Play music, audiobooks, and podcasts from Amazon Music, Apple Music, Spotify, and others.\",\n                \"Alexa is happy to help – Ask Alexa for weather updates, set timers, answer questions, tell jokes, and more.\",\n                \"Smart home made easy – Use your voice to turn on lights, lock doors, set thermostats, and more with compatible devices.\",\n                \"Privacy controls – Amazon is not in the business of selling your personal information to others.\"\n            ]\n        },\n        \"source\": \"Live Scraping - Just scraped product details\",\n        \"parameters\": {\n            \"url\": \"https://www.amazon.com/dp/B08N5WRWNW\",\n            \"maxAgeHours\": 24\n        },\n        \"sessionId\": \"uuid-session-id\"\n    }\n}"
-                        }
-                    ]
-                },
-                {
-                    "name": "Product Details - Missing URL",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 400\", function () {",
-                                    "    pm.response.to.have.status(400);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Missing URL parameter error\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.success).to.eql(false);",
-                                    "    pm.expect(jsonData.error).to.include('Missing required parameter');",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/product/details",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "product",
-                                "details"
-                            ]
-                        },
-                        "description": "Test error handling when URL parameter is missing"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Product Details - Invalid URL",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 400\", function () {",
-                                    "    pm.response.to.have.status(400);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Invalid URL format error\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.success).to.eql(false);",
-                                    "    pm.expect(jsonData.error).to.include('Invalid URL format');",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/product/details?url=not-a-valid-url",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "product",
-                                "details"
-                            ],
-                            "query": [
-                                {
-                                    "key": "url",
-                                    "value": "not-a-valid-url"
-                                }
-                            ]
-                        },
-                        "description": "Test error handling when an invalid URL is provided"
-                    },
-                    "response": []
-                }
-            ],
-            "description": "Individual product detail scraping from specific Amazon URLs with database caching"
-        },
-        {
-            "name": "Testing & Utilities",
-            "item": [
-                {
-                    "name": "Echo Test",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 200\", function () {",
-                                    "    pm.response.to.have.status(200);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Echo response is correct\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.message).to.eql('Echo successful');",
-                                    "    pm.expect(jsonData.received.test).to.eql('Hello from Postman');",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"test\": \"Hello from Postman\",\n    \"timestamp\": \"{{$timestamp}}\",\n    \"uuid\": \"{{$randomUUID}}\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/echo",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "echo"
-                            ]
-                        },
-                        "description": "Echo endpoint for testing request/response flow"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Echo Test - With Auth",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 200\", function () {",
-                                    "    pm.response.to.have.status(200);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Auth header is present in response\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.headers.authorization).to.eql('Bearer {{authToken}}');",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            },
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{authToken}}"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"test\": \"Authenticated Echo\",\n    \"user\": \"demo\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/echo",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "echo"
-                            ]
-                        },
-                        "description": "Echo endpoint with authentication header"
-                    },
-                    "response": []
-                }
-            ],
-            "description": "Testing utilities and echo endpoints for development"
-        },
-        {
-            "name": "Error Handling",
-            "item": [
-                {
-                    "name": "404 - Not Found",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "pm.test(\"Status code is 404\", function () {",
-                                    "    pm.response.to.have.status(404);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"404 error response\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.error).to.eql('Route not found');",
-                                    "    pm.expect(jsonData.path).to.eql('/nonexistent');",
-                                    "});"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{baseUrl}}/nonexistent",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "nonexistent"
-                            ]
-                        },
-                        "description": "Test 404 error handling for non-existent routes"
-                    },
-                    "response": []
-                }
-            ],
-            "description": "Error handling test cases"
+            "description": "Metadata management endpoints for storing and retrieving category URLs"
         }
     ],
     "event": [

@@ -105,3 +105,4 @@ volumes:
 networks:
   web3fygo-network:
     driver: bridge
+ 

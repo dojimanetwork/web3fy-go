@@ -22,10 +22,10 @@ get_latest_tag() {
 increment_version() {
     local version=$1
     local increment_type=$2
-    
+
     # Remove 'v' prefix if it exists
     version=${version#v}
-    
+
     # Split version into parts
     IFS='.' read -ra VERSION_PARTS <<< "$version"
     
@@ -36,20 +36,20 @@ increment_version() {
     
     # Increment based on type
     case $increment_type in
-        major)
+    major)
             major=$((major + 1))
-            minor=0
-            patch=0
-            ;;
-        minor)
+        minor=0
+        patch=0
+        ;;
+    minor)
             minor=$((minor + 1))
-            patch=0
-            ;;
+        patch=0
+        ;;
         patch|*)
             patch=$((patch + 1))
-            ;;
-    esac
-    
+        ;;
+esac
+
     echo "${major}.${minor}.${patch}"
 }
 
