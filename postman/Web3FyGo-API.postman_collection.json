@@ -637,7 +637,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/api/products?trending=amazon&category=electronics&limit=5&force=false",
+                            "raw": "{{baseUrl}}/api/products?trending=amazon&category=electronics&limit=5",
                             "host": [
                                 "{{baseUrl}}"
                             ],
@@ -649,28 +649,140 @@
                                 {
                                     "key": "trending",
                                     "value": "amazon",
-                                    "description": "Source of trending products (currently only 'amazon' is supported)"
+                                    "description": "Source of trending products (currently only 'amazon' supported)"
                                 },
                                 {
                                     "key": "category",
                                     "value": "electronics",
-                                    "description": "Category of products to fetch (e.g., electronics, books, clothing, home, beauty, sports, toys, grocery)"
+                                    "description": "Product category (e.g., electronics, books, etc.)"
                                 },
                                 {
                                     "key": "limit",
                                     "value": "5",
-                                    "description": "Number of products to fetch (max 50)"
+                                    "description": "Number of products to return (max 50)"
                                 },
                                 {
                                     "key": "force",
                                     "value": "false",
-                                    "description": "Force refresh data from source (bypass cache)"
+                                    "description": "Force refresh data (default: false)"
                                 }
                             ]
                         },
-                        "description": "Get trending products from Amazon for a specific category. The endpoint supports caching and fallback mechanisms."
+                        "description": "Get trending products with caching and fallback mechanisms"
                     },
-                    "response": []
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "originalRequest": {
+                                "method": "GET",
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/products?trending=amazon&category=electronics&limit=5"
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": {
+                                "mode": "json",
+                                "raw": "{\n    \"success\": true,\n    \"data\": {\n        \"products\": [\n            {\n                \"rank\": 1,\n                \"title\": \"Sample Product\",\n                \"price\": \"$99.99\",\n                \"rating\": \"4.5 out of 5 stars\",\n                \"image\": \"https://example.com/image.jpg\",\n                \"link\": \"https://amazon.com/dp/1234567890\",\n                \"source\": \"Amazon Electronics Best Sellers\",\n                \"scrapedAt\": \"2024-03-20T12:00:00Z\"\n            }\n        ],\n        \"totalFound\": 1,\n        \"source\": \"PostgreSQL Cache (electronics)\",\n        \"parameters\": {\n            \"trending\": \"amazon\",\n            \"category\": \"electronics\",\n            \"limit\": 5,\n            \"maxAgeHours\": 24\n        }\n    },\n    \"message\": \"Successfully retrieved 1 products from PostgreSQL\"\n}"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Product Details",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/products/details?url=https://www.amazon.com/dp/B08N5KWB9H",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products",
+                                "details"
+                            ],
+                            "query": [
+                                {
+                                    "key": "url",
+                                    "value": "https://www.amazon.com/dp/B08N5KWB9H",
+                                    "description": "Amazon product URL to fetch details for"
+                                }
+                            ]
+                        },
+                        "description": "Get detailed information for a specific Amazon product"
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "originalRequest": {
+                                "method": "GET",
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/products/details?url=https://www.amazon.com/dp/B08N5KWB9H"
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": {
+                                "mode": "json",
+                                "raw": "{\n    \"success\": true,\n    \"data\": {\n        \"product\": {\n            \"title\": \"Sample Product\",\n            \"price\": \"$99.99\",\n            \"rating\": \"4.5 out of 5 stars\",\n            \"image\": \"https://example.com/image.jpg\",\n            \"link\": \"https://amazon.com/dp/B08N5KWB9H\",\n            \"source\": \"Amazon Product Detail\",\n            \"scrapedAt\": \"2024-03-20T12:00:00Z\",\n            \"asin\": \"B08N5KWB9H\",\n            \"availability\": \"In Stock\",\n            \"reviewCount\": \"1,234 reviews\",\n            \"brand\": \"Sample Brand\",\n            \"features\": [\n                \"Feature 1\",\n                \"Feature 2\",\n                \"Feature 3\"\n            ]\n        },\n        \"source\": \"Database Cache (Product Detail) - 2 hours old\",\n        \"parameters\": {\n            \"url\": \"https://www.amazon.com/dp/B08N5KWB9H\",\n            \"maxAgeHours\": 24\n        }\n    },\n    \"message\": \"Successfully retrieved product details from database cache\"\n}"
+                            }
+                        },
+                        {
+                            "name": "Missing URL",
+                            "originalRequest": {
+                                "method": "GET",
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/products/details"
+                                }
+                            },
+                            "status": "Bad Request",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": {
+                                "mode": "json",
+                                "raw": "{\n    \"success\": false,\n    \"error\": \"Missing required parameter\",\n    \"message\": \"The 'url' parameter is required and must be a valid Amazon product URL\"\n}"
+                            }
+                        },
+                        {
+                            "name": "Invalid URL",
+                            "originalRequest": {
+                                "method": "GET",
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/products/details?url=invalid-url"
+                                }
+                            },
+                            "status": "Bad Request",
+                            "code": 400,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": {
+                                "mode": "json",
+                                "raw": "{\n    \"success\": false,\n    \"error\": \"Invalid URL format\",\n    \"message\": \"Please provide a valid Amazon product URL\"\n}"
+                            }
+                        }
+                    ]
                 },
                 {
                     "name": "Get Products - Missing Required Parameter",

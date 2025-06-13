@@ -40,23 +40,23 @@ export const initializeDatabase = async (): Promise<void> => {
 
         // Create products table
         try {
-            await client.query(`
-                CREATE TABLE IF NOT EXISTS products (
-                    id SERIAL PRIMARY KEY,
-                    asin VARCHAR(20) UNIQUE,
-                    rank INTEGER,
-                    title TEXT NOT NULL,
-                    price VARCHAR(50),
-                    rating VARCHAR(50),
-                    image_url TEXT,
-                    product_url TEXT,
-                    source VARCHAR(100),
-                    category VARCHAR(50) DEFAULT 'electronics',
-                    scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-            `);
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS products (
+                id SERIAL PRIMARY KEY,
+                asin VARCHAR(20) UNIQUE,
+                rank INTEGER,
+                title TEXT NOT NULL,
+                price VARCHAR(50),
+                rating VARCHAR(50),
+                image_url TEXT,
+                product_url TEXT,
+                source VARCHAR(100),
+                category VARCHAR(50) DEFAULT 'electronics',
+                scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
         } catch (error: any) {
             if (error.code !== '42P07') { // 42P07 is the error code for duplicate table
                 throw error;
@@ -65,7 +65,7 @@ export const initializeDatabase = async (): Promise<void> => {
 
         // Create metadata table
         try {
-            await client.query(`
+        await client.query(`
                 CREATE TABLE IF NOT EXISTS metadata (
                     id SERIAL PRIMARY KEY,
                     type VARCHAR(50) NOT NULL,
@@ -85,14 +85,14 @@ export const initializeDatabase = async (): Promise<void> => {
 
         // Create indexes for better performance
         try {
-            await client.query(`
+        await client.query(`
                 CREATE INDEX IF NOT EXISTS idx_metadata_type_category ON metadata(type, category);
                 CREATE INDEX IF NOT EXISTS idx_products_asin ON products(asin);
-                CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
-                CREATE INDEX IF NOT EXISTS idx_products_scraped_at ON products(scraped_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
+            CREATE INDEX IF NOT EXISTS idx_products_scraped_at ON products(scraped_at DESC);
                 CREATE INDEX IF NOT EXISTS idx_products_rank ON products(rank);
                 CREATE INDEX IF NOT EXISTS idx_products_url ON products(product_url);
-            `);
+        `);
         } catch (error: any) {
             if (error.code !== '42701') { // 42701 is the error code for duplicate index
                 throw error;
@@ -101,19 +101,19 @@ export const initializeDatabase = async (): Promise<void> => {
 
         // Create scraping_sessions table
         try {
-            await client.query(`
-                CREATE TABLE IF NOT EXISTS scraping_sessions (
-                    id SERIAL PRIMARY KEY,
-                    session_id VARCHAR(50) UNIQUE NOT NULL,
-                    source VARCHAR(50) NOT NULL,
-                    category VARCHAR(50),
-                    products_found INTEGER DEFAULT 0,
-                    success BOOLEAN DEFAULT false,
-                    error_message TEXT,
-                    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    completed_at TIMESTAMP
-                );
-            `);
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS scraping_sessions (
+                id SERIAL PRIMARY KEY,
+                session_id VARCHAR(50) UNIQUE NOT NULL,
+                source VARCHAR(50) NOT NULL,
+                category VARCHAR(50),
+                products_found INTEGER DEFAULT 0,
+                success BOOLEAN DEFAULT false,
+                error_message TEXT,
+                started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                completed_at TIMESTAMP
+            );
+        `);
         } catch (error: any) {
             if (error.code !== '42P07') {
                 throw error;
